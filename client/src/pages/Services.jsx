@@ -674,7 +674,7 @@ const Services = () => {
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                       Documents Required for One Lending
                     </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                       <div className="p-3 bg-slate-50 rounded-xl text-center border border-slate-100">
                         <FileText size={18} className="mx-auto text-[#157943] mb-1" />
                         <span className="text-[11px] font-bold text-slate-700 block">Aadhaar</span>
@@ -1014,7 +1014,7 @@ const Services = () => {
       {/* ================================================================= */}
       {isApplyModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-5 sm:p-8 shadow-2xl border border-slate-200 relative max-h-[90vh] overflow-y-auto">
             
             {/* Close Button */}
             <button

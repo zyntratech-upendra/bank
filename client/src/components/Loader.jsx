@@ -1,85 +1,81 @@
 import { motion } from 'framer-motion';
-import { Landmark } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Landmark, ShieldCheck } from 'lucide-react';
+import { useEffect } from 'react';
 
 const Loader = ({ onFinish }) => {
-  const [progress, setProgress] = useState(0);
-
   useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(timer);
-          setTimeout(() => onFinish && onFinish(), 300);
-          return 100;
-        }
-        return prev + 5;
-      });
-    }, 40);
+    const timer = setTimeout(() => {
+      if (onFinish) onFinish();
+    }, 1250);
 
-    return () => clearInterval(timer);
+    return () => clearTimeout(timer);
   }, [onFinish]);
 
   return (
     <motion.div
       initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.6, ease: 'easeInOut' } }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#08182f] text-white"
+      exit={{ opacity: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#faf8f4] via-[#ffffff] to-[#f4eee3] text-slate-800 overflow-hidden select-none"
     >
-      {/* Background glowing ambient light */}
-      <div className="absolute w-96 h-96 bg-[#c48722]/15 rounded-full blur-3xl pointer-events-none" />
+      {/* Ambient background glows */}
+      <div className="absolute w-[600px] h-[600px] bg-[#c48722]/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute w-80 h-80 bg-[#0e274a]/5 rounded-full blur-[90px] pointer-events-none" />
+
+      {/* Decorative concentric watermark rings */}
+      <div className="absolute w-[440px] h-[440px] rounded-full border border-[#c48722]/15 pointer-events-none" />
+      <div className="absolute w-[600px] h-[600px] rounded-full border border-slate-200/50 pointer-events-none" />
 
       <div className="relative z-10 flex flex-col items-center text-center px-6">
         
-        {/* Animated Emblem with Golden Aura */}
+        {/* Animated Brand Emblem */}
         <div className="relative mb-6">
-          {/* Pulsing ring */}
+          {/* Subtle spinning dashed golden halo */}
           <motion.div
-            animate={{ scale: [1, 1.15, 1], opacity: [0.3, 0.7, 0.3] }}
-            transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-            className="absolute -inset-3 rounded-2xl bg-gradient-to-tr from-[#c48722] to-amber-200 blur-md opacity-40"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 10, ease: 'linear' }}
+            className="absolute -inset-3.5 rounded-full border border-dashed border-[#c48722]/40"
           />
 
+          {/* Soft breathing golden glow */}
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="relative w-20 h-20 bg-gradient-to-br from-[#0e274a] to-[#08182f] border-2 border-[#c48722] rounded-2xl flex items-center justify-center shadow-2xl"
+            animate={{ scale: [1, 1.12, 1], opacity: [0.35, 0.65, 0.35] }}
+            transition={{ repeat: Infinity, duration: 2.2, ease: 'easeInOut' }}
+            className="absolute -inset-2.5 rounded-3xl bg-gradient-to-tr from-[#c48722]/40 to-amber-200/50 blur-lg"
+          />
+
+          {/* Main Icon Container - Deep Navy with Gold Border */}
+          <motion.div
+            initial={{ scale: 0.75, opacity: 0, y: 10 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-24 h-24 sm:w-28 sm:h-28 bg-[#0e274a] border-2 border-[#c48722] rounded-3xl flex items-center justify-center shadow-[0_12px_30px_rgba(14,39,74,0.18)]"
           >
-            <Landmark size={40} className="text-[#e5a83b] stroke-[2.2]" />
+            <Landmark className="w-12 h-12 sm:w-14 sm:h-14 text-[#f5c76c] stroke-[2.2] drop-shadow-sm" />
           </motion.div>
         </div>
 
-        {/* Brand Name */}
+        {/* Brand Name Typography */}
         <motion.div
           initial={{ y: 15, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="space-y-1"
+          transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="space-y-1.5"
         >
-          <h2 className="text-3xl font-black tracking-tight text-white font-display">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0e274a] font-display">
             BANKING
-          </h2>
-          <p className="text-xs font-bold tracking-[0.35em] text-[#d89e34] uppercase">
+          </h1>
+          <p className="text-xs sm:text-sm font-extrabold tracking-[0.35em] text-[#c48722] uppercase">
             SERVICES
           </p>
-          <p className="text-[11px] text-slate-400 font-medium tracking-wider pt-2">
-            Government Bank Tie-up Partner
-          </p>
+
+          <div className="pt-3">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#fcedd7] border border-[#f5d7ad] text-[#935b0b] text-xs font-bold tracking-wide shadow-2xs">
+              <ShieldCheck size={14} className="text-[#c48722]" />
+              <span>Government Bank Tie-up Partner</span>
+            </span>
+          </div>
         </motion.div>
 
-        {/* Progress Bar */}
-        <div className="w-56 h-1.5 bg-slate-800 rounded-full mt-8 overflow-hidden relative">
-          <motion.div
-            className="h-full bg-gradient-to-r from-[#c48722] to-amber-300 rounded-full"
-            style={{ width: `${progress}%` }}
-            transition={{ ease: 'easeOut' }}
-          />
-        </div>
-
-        <span className="text-[11px] font-mono text-slate-400 mt-2">
-          {progress}%
-        </span>
       </div>
     </motion.div>
   );

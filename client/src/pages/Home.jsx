@@ -103,35 +103,35 @@ const Home = () => {
               Get low interest gold loans through nearby Government Banks and easy financial solutions for your personal and business needs.
             </p>
 
-            {/* Four Feature Badges (Single Row on Desktop/Tablet, 2x2 on Mobile) */}
-            <div className="flex flex-wrap sm:flex-nowrap gap-2.5 pt-2 pb-1">
+            {/* Four Feature Badges (2x2 on Mobile, 4-Cols on Desktop) */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 pb-1">
               
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3.5 py-2.5 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
                 <div className="w-6 h-6 rounded-full bg-[#dbe8fa] text-[#0f2441] flex items-center justify-center shrink-0">
                   <Percent size={13} className="stroke-[2.5]" />
                 </div>
-                <span className="text-[12.5px] font-bold text-slate-800 whitespace-nowrap">Low Interest Rates</span>
+                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Low Interest</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3.5 py-2.5 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
                 <div className="w-6 h-6 rounded-full bg-[#dbe8fa] text-[#0f2441] flex items-center justify-center shrink-0">
                   <Landmark size={13} className="stroke-[2.5]" />
                 </div>
-                <span className="text-[12.5px] font-bold text-slate-800 whitespace-nowrap">Govt. Bank Tie-ups</span>
+                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Govt. Banks</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3.5 py-2.5 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
                 <div className="w-6 h-6 rounded-full bg-[#faebd7] text-[#c48722] flex items-center justify-center shrink-0">
                   <Zap size={13} className="stroke-[2.5]" />
                 </div>
-                <span className="text-[12.5px] font-bold text-slate-800 whitespace-nowrap">Quick Approval</span>
+                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Quick Approval</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3.5 py-2.5 shadow-2xs">
+              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
                 <div className="w-6 h-6 rounded-full bg-[#d5f3e2] text-emerald-800 flex items-center justify-center shrink-0">
                   <ShieldCheck size={13} className="stroke-[2.5]" />
                 </div>
-                <span className="text-[12.5px] font-bold text-slate-800 whitespace-nowrap">Safe &amp; Secure</span>
+                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Safe &amp; Secure</span>
               </div>
 
             </div>
@@ -403,59 +403,59 @@ const Home = () => {
       {/* ================================================================= */}
       {/* 3. KEY METRICS & STATS BAR                                        */}
       {/* ================================================================= */}
-      <section className="py-12 bg-white">
+      <section className="py-10 sm:py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-6 sm:p-8 shadow-xs">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-6 sm:gap-4 items-center divide-y md:divide-y-0 md:divide-x divide-slate-200">
+          <div className="bg-slate-50/90 border border-slate-200/80 rounded-2xl p-5 sm:p-7 shadow-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 items-center">
               
-              <div className="flex items-center gap-4 px-3">
+              <div className="flex items-center gap-3 sm:gap-4 p-2">
                 <div className="text-[#c48722] shrink-0">
-                  <Users size={36} />
+                  <Users size={32} className="sm:w-9 sm:h-9" />
                 </div>
                 <div>
-                  <h4 className="text-2xl sm:text-3xl font-black text-[#0e274a]">50,000+</h4>
-                  <p className="text-[13px] font-semibold text-slate-500">Happy Customers</p>
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#0e274a]">50,000+</h4>
+                  <p className="text-xs sm:text-[13px] font-semibold text-slate-500">Happy Customers</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 px-3 pt-4 md:pt-0">
+              <div className="flex items-center gap-3 sm:gap-4 p-2">
                 <div className="text-[#c48722] shrink-0">
-                  <Landmark size={36} />
+                  <Landmark size={32} className="sm:w-9 sm:h-9" />
                 </div>
                 <div>
-                  <h4 className="text-2xl sm:text-3xl font-black text-[#0e274a]">10+</h4>
-                  <p className="text-[13px] font-semibold text-slate-500">Govt. Bank Partners</p>
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#0e274a]">10+</h4>
+                  <p className="text-xs sm:text-[13px] font-semibold text-slate-500">Govt. Bank Partners</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 px-3 pt-4 md:pt-0">
+              <div className="flex items-center gap-3 sm:gap-4 p-2">
                 <div className="text-[#c48722] shrink-0">
-                  <FileText size={36} />
+                  <FileText size={32} className="sm:w-9 sm:h-9" />
                 </div>
                 <div>
-                  <h4 className="text-2xl sm:text-3xl font-black text-[#0e274a]">95%</h4>
-                  <p className="text-[13px] font-semibold text-slate-500">Loan Approval Rate</p>
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#0e274a]">95%</h4>
+                  <p className="text-xs sm:text-[13px] font-semibold text-slate-500">Loan Approval Rate</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 px-3 pt-4 md:pt-0">
+              <div className="flex items-center gap-3 sm:gap-4 p-2">
                 <div className="text-[#c48722] shrink-0">
-                  <Percent size={36} />
+                  <Percent size={32} className="sm:w-9 sm:h-9" />
                 </div>
                 <div>
-                  <h4 className="text-2xl sm:text-3xl font-black text-[#0e274a]">Lowest</h4>
-                  <p className="text-[13px] font-semibold text-slate-500">Interest Rates</p>
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#0e274a]">Lowest</h4>
+                  <p className="text-xs sm:text-[13px] font-semibold text-slate-500">Interest Rates</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 px-3 pt-4 md:pt-0">
+              <div className="flex items-center gap-3 sm:gap-4 p-2 col-span-2 sm:col-span-1">
                 <div className="text-[#c48722] shrink-0">
-                  <Star size={36} />
+                  <Star size={32} className="sm:w-9 sm:h-9" />
                 </div>
                 <div>
-                  <h4 className="text-2xl sm:text-3xl font-black text-[#0e274a]">12+</h4>
-                  <p className="text-[13px] font-semibold text-slate-500">Years of Experience</p>
+                  <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#0e274a]">12+</h4>
+                  <p className="text-xs sm:text-[13px] font-semibold text-slate-500">Years of Experience</p>
                 </div>
               </div>
 

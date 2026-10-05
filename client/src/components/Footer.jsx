@@ -3,10 +3,10 @@ import { Landmark, Mail, Phone, MapPin } from 'lucide-react';
 
 const Footer = () => {
   return (
-    <footer className="bg-brand-blue-900 text-slate-300 pt-16 pb-8">
+    <footer className="bg-brand-blue-900 text-slate-300 pt-14 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          <div className="col-span-1 md:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12">
+          <div className="col-span-1">
             <Link to="/" className="flex items-center space-x-2 mb-6">
               <div className="bg-white p-2 rounded-lg text-brand-blue-900">
                 <Landmark size={28} />
@@ -80,12 +80,12 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-brand-blue-800 pt-8 mt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400">
-          <p>&copy; {new Date().getFullYear()} Banking Services. All rights reserved.</p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white transition-colors">FAQ</a>
+        <div className="border-t border-brand-blue-800 pt-6 mt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 gap-4 text-center sm:text-left">
+          <p>&copy; {new Date().getFullYear()} BANKING SERVICES. All rights reserved.</p>
+          <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
+            <Link to="/about" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/about" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/contact" className="hover:text-white transition-colors">Branch Support</Link>
           </div>
         </div>
       </div>

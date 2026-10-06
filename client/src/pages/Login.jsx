@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Landmark, ArrowRight, Mail, Lock, Eye, EyeOff, ShieldCheck, Phone, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import api from '../utils/api';
 
 const Login = () => {
   const [identifier, setIdentifier] = useState('');
@@ -13,19 +14,28 @@ const Login = () => {
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate authentication
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await api.post('/auth/login', {
+        email: identifier,
+        password
+      });
+      
+      localStorage.setItem('bank_token', res.data.token);
+      localStorage.setItem('bank_user', JSON.stringify(res.data.user));
       setSuccess(true);
       setTimeout(() => {
-        navigate('/');
+        navigate('/dashboard');
       }, 1000);
-    }, 800);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to login. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

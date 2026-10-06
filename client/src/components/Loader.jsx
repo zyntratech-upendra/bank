@@ -15,7 +15,7 @@ const Loader = ({ onFinish }) => {
     <motion.div
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-[#faf8f4] via-[#ffffff] to-[#f4eee3] text-slate-800 overflow-hidden select-none"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-br from-[#faf8f4] via-[#ffffff] to-[#f4eee3] text-slate-800 overflow-hidden select-none"
     >
       {/* Ambient background glows */}
       <div className="absolute w-[600px] h-[600px] bg-[#c48722]/10 rounded-full blur-[120px] pointer-events-none" />

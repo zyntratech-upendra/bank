@@ -6,8 +6,21 @@ const Loan = require('../models/Loan');
 
 router.post('/apply', async (req, res) => {
   try {
-    const { userId, loanType, amount } = req.body;
-    const loan = new Loan({ user: userId, loanType, amount });
+    const { applicantName, applicantMobile, loanType, amount, branch } = req.body;
+    
+    // Generate a unique application ID
+    const count = await Loan.countDocuments();
+    const applicationId = `APP${new Date().getFullYear()}${String(count + 1).padStart(3, '0')}`;
+
+    const loan = new Loan({ 
+      applicationId,
+      applicantName, 
+      applicantMobile, 
+      loanType, 
+      amount: Number(amount) || 0,
+      branch: branch || 'Vijayawada'
+    });
+    
     await loan.save();
     res.status(201).json({ message: 'Loan application submitted successfully', loan });
   } catch (err) {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import api from '../utils/api';
 import {
   Mail,
   Phone,
@@ -25,6 +26,13 @@ const Contact = () => {
 
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState([]);
+
+  useEffect(() => {
+    api.get('/public/locations')
+      .then(res => setLocations(res.data))
+      .catch(console.error);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -119,99 +127,27 @@ const Contact = () => {
                     — Reach Us Directly —
                   </span>
                   <h3 className="text-2xl font-display font-black text-[#0e274a]">
-                    Headquarters &amp; Office
+                    Our Branches &amp; Offices
                   </h3>
                 </div>
 
                 <div className="space-y-6 text-sm">
-                  
-                  {/* Address */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#fdf5e7] text-[#c48722] flex items-center justify-center shrink-0 border border-[#fae2c0] mt-0.5">
-                      <MapPin size={20} />
+                  {locations.length > 0 ? locations.map((loc, idx) => (
+                    <div key={idx} className="flex items-start gap-4 mb-4 pb-4 border-b border-slate-100 last:border-0 last:pb-0">
+                      <div className="w-10 h-10 rounded-xl bg-[#fdf5e7] text-[#c48722] flex items-center justify-center shrink-0 border border-[#fae2c0] mt-0.5">
+                        <MapPin size={20} />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#0e274a] text-base mb-1">{loc.city} Branch</h4>
+                        <p className="text-slate-600 leading-relaxed">
+                          {loc.address}
+                        </p>
+                        <p className="text-slate-600 font-semibold mt-1">Phone: {loc.contact}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-[#0e274a] text-base mb-1">Our Office</h4>
-                      <p className="text-slate-600 leading-relaxed">
-                        MG Road, Wipro Compound,<br />
-                        Vijayawada, Andhra Pradesh - 520010
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Phone */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#fdf5e7] text-[#c48722] flex items-center justify-center shrink-0 border border-[#fae2c0] mt-0.5">
-                      <Phone size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-[#0e274a] text-base mb-1">Phone</h4>
-                      <p className="text-slate-600 font-semibold">+91 98765 43210</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Toll-free across Andhra Pradesh &amp; Telangana</p>
-                    </div>
-                  </div>
-
-                  {/* Email */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#fdf5e7] text-[#c48722] flex items-center justify-center shrink-0 border border-[#fae2c0] mt-0.5">
-                      <Mail size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-[#0e274a] text-base mb-1">Email</h4>
-                      <p className="text-slate-600 font-semibold">support@bankingservices.in</p>
-                      <p className="text-xs text-slate-500 mt-0.5">We respond within 2 business hours</p>
-                    </div>
-                  </div>
-
-                  {/* Working Hours */}
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-[#fdf5e7] text-[#c48722] flex items-center justify-center shrink-0 border border-[#fae2c0] mt-0.5">
-                      <Clock size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-[#0e274a] text-base mb-1">Working Hours</h4>
-                      <p className="text-slate-600 font-medium">Mon - Sat: 9:00 AM – 6:00 PM</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Closed on National Bank Holidays</p>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Styled Map Preview Card */}
-              <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="text-[#c48722]" size={18} />
-                    <span className="font-bold text-xs text-[#0e274a]">Main Branch Location</span>
-                  </div>
-                  <a
-                    href="https://maps.google.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs font-bold text-[#c48722] hover:underline inline-flex items-center gap-1"
-                  >
-                    Open in Maps <ExternalLink size={12} />
-                  </a>
-                </div>
-
-                {/* Simulated Stylized Map Card */}
-                <div className="relative rounded-2xl overflow-hidden h-44 bg-slate-100 border border-slate-200 flex items-center justify-center">
-                  {/* Subtle map grid background */}
-                  <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
-                  
-                  {/* Location Pin Element */}
-                  <div className="relative z-10 flex flex-col items-center animate-bounce">
-                    <div className="px-3.5 py-1.5 bg-[#0e274a] text-white rounded-xl shadow-lg text-xs font-bold flex items-center gap-1.5 mb-1 whitespace-nowrap border border-[#c48722]">
-                      <Landmark size={13} className="text-[#c48722]" />
-                      BANKING SERVICES (Vijayawada)
-                    </div>
-                    <div className="w-4 h-4 bg-[#c48722] rounded-full border-2 border-white shadow-md" />
-                  </div>
-
-                  <div className="absolute bottom-2 left-3 text-[10px] text-slate-500 bg-white/90 px-2 py-0.5 rounded font-medium">
-                    MG Road, Vijayawada, AP
-                  </div>
+                  )) : (
+                    <p className="text-slate-500">Loading branch locations...</p>
+                  )}
                 </div>
               </div>
 

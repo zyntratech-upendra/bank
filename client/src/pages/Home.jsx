@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../utils/api';
 import {
   ShieldCheck,
   Percent,
@@ -26,11 +27,26 @@ const Home = () => {
   const [purity, setPurity] = useState('22K');
   const [tenureMonths, setTenureMonths] = useState(12);
 
+  const [dbServices, setDbServices] = useState([]);
+
+  useEffect(() => {
+    api.get('/public/services').then(res => {
+      setDbServices(res.data);
+    }).catch(console.error);
+  }, []);
+
+  const getServiceData = (name) => {
+    return dbServices.find(s => s.loanType === name) || {};
+  };
+
+  const goldLoanDb = getServiceData('Gold Loan');
+  const goldRate = goldLoanDb.interestRate || 8.5;
+
   // Approximate gold rate calculations
   const ratePerGram = purity === '24K' ? 7300 : purity === '22K' ? 6700 : 5500;
   const goldValue = goldGrams * ratePerGram;
   const maxLoan = Math.round(goldValue * 0.75); // 75% RBI regulatory LTV
-  const monthlyRate = 0.085 / 12; // 8.5% annual rate
+  const monthlyRate = (goldRate / 100) / 12; 
   const monthlyInterest = Math.round(maxLoan * monthlyRate);
 
   // FAQ Accordion State
@@ -187,7 +203,7 @@ const Home = () => {
                     <Coins size={28} />
                   </div>
                   <span className="px-3 py-1 bg-[#fdf5e3] border border-[#f6dda3] text-[#9e6912] text-xs font-bold rounded-full">
-                    From 8.50% p.a.
+                    From {goldRate}% p.a.
                   </span>
                 </div>
                 <h3 className="font-bold text-[#0e274a] text-xl mb-2.5">Gold Loan</h3>
@@ -553,7 +569,7 @@ const Home = () => {
                 </div>
               </div>
               <div className="px-4 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs sm:text-sm font-bold">
-                ✓ Starting Rate: 8.50% p.a.
+                ✓ Starting Rate: {goldRate}% p.a.
               </div>
             </div>
 
@@ -653,7 +669,7 @@ const Home = () => {
                   </div>
                   <div>
                     <span className="text-[12px] text-slate-300 block">Bank Annual Rate</span>
-                    <span className="text-xl font-bold text-emerald-400">8.50% p.a.</span>
+                    <span className="text-xl font-bold text-emerald-400">{goldRate}% p.a.</span>
                   </div>
                 </div>
 

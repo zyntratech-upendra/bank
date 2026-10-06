@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import api from '../utils/api';
 import {
   Coins,
   RefreshCw,
@@ -22,6 +23,7 @@ import {
   Percent,
   Check
 } from 'lucide-react';
+import DynamicServiceModal from '../components/DynamicServiceModal';
 
 const Services = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -62,10 +64,34 @@ const Services = () => {
   const [purity, setPurity] = useState('22K');
   const [tenureMonths, setTenureMonths] = useState(12);
 
+  const [dbServices, setDbServices] = useState([]);
+  const [dynamicServices, setDynamicServices] = useState([]);
+  const [isDynamicModalOpen, setIsDynamicModalOpen] = useState(false);
+  const [selectedDynamicService, setSelectedDynamicService] = useState('');
+  
+  useEffect(() => {
+    api.get('/public/services').then(res => {
+      setDbServices(res.data);
+    }).catch(console.error);
+
+    api.get('/public/dynamic-services').then(res => {
+      setDynamicServices(res.data);
+    }).catch(console.error);
+  }, []);
+
+  const getServiceData = (name) => {
+    return dbServices.find(s => s.loanType === name) || {};
+  };
+
+  const goldLoanDb = getServiceData('Gold Loan');
+  const transferDb = getServiceData('Loan Transfer');
+  const personalDb = getServiceData('Personal Loan');
+  const businessDb = getServiceData('Business Loan');
+
   const ratePerGram = purity === '24K' ? 7300 : purity === '22K' ? 6700 : 5500;
   const goldValue = goldGrams * ratePerGram;
   const maxLoan = Math.round(goldValue * 0.75); // 75% RBI regulatory LTV
-  const annualGovtRate = 0.085; // 8.5%
+  const annualGovtRate = (goldLoanDb.interestRate || 8.5) / 100;
   const annualPawnRate = 0.24; // 24% typical private rate
   const monthlyInterest = Math.round(maxLoan * (annualGovtRate / 12));
   const interestSavedYearly = Math.round(maxLoan * (annualPawnRate - annualGovtRate));
@@ -83,14 +109,25 @@ const Services = () => {
   const [formSuccess, setFormSuccess] = useState(false);
   const [refNumber, setRefNumber] = useState('');
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     setFormSubmitting(true);
-    setTimeout(() => {
+    try {
+      const res = await api.post('/loans/apply', {
+        applicantName: formData.fullName,
+        applicantMobile: formData.mobileNumber,
+        loanType: formData.service,
+        amount: formData.goldGramsOrAmount,
+        branch: formData.branch
+      });
       setFormSubmitting(false);
       setFormSuccess(true);
-      setRefNumber(`BK-${Math.floor(100000 + Math.random() * 900000)}`);
-    }, 1000);
+      setRefNumber(res.data.loan.applicationId);
+    } catch (err) {
+      console.error(err);
+      setFormSubmitting(false);
+      alert('Failed to submit application. Please try again.');
+    }
   };
 
   const resetForm = () => {
@@ -111,7 +148,7 @@ const Services = () => {
     {
       id: 'gold',
       title: 'Gold Loan',
-      badge: 'Lowest Rate 8.5% p.a.',
+      badge: `Lowest Rate ${goldLoanDb.interestRate || 8.5}% p.a.`,
       badgeBg: 'bg-[#faf2e6] border-[#f0d6b0] text-[#9a6414]',
       icon: Coins,
       iconColor: 'text-[#c48722]',
@@ -805,9 +842,53 @@ const Services = () => {
               </div>
             );
           })}
+          
+          {/* Render Dynamic Services */}
+          {dynamicServices.map((service) => (
+            <div
+              key={service._id}
+              className="bg-white rounded-3xl p-7 flex flex-col justify-between border border-slate-200/90 transition-all duration-300 group shadow-sm hover:shadow-xl hover:-translate-y-1.5"
+            >
+              <div>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#e0f2fe] to-[#bae6fd] text-[#0284c7] flex items-center justify-center shadow-2xs group-hover:scale-105 transition-transform">
+                    <FileText size={26} />
+                  </div>
+                  <span className="px-3 py-1 text-xs font-bold rounded-full border bg-emerald-50 text-emerald-700 border-emerald-200">
+                    New Service
+                  </span>
+                </div>
+                <h3 className="font-bold text-[#0e274a] text-xl mb-2.5">
+                  {service.title}
+                </h3>
+                <p className="text-[14px] text-slate-600 leading-relaxed mb-5">
+                  {service.description}
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
+                <button
+                  onClick={() => {
+                    setSelectedDynamicService(service.title);
+                    setIsDynamicModalOpen(true);
+                  }}
+                  className="px-4 py-2 bg-[#0284c7] hover:bg-[#0369a1] text-white rounded-xl text-xs font-bold transition-all shadow-2xs hover:shadow"
+                >
+                  Request Service
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
       </section>
+
+      {/* Dynamic Service Modal */}
+      <DynamicServiceModal 
+        isOpen={isDynamicModalOpen} 
+        onClose={() => setIsDynamicModalOpen(false)} 
+        serviceName={selectedDynamicService} 
+      />
 
       {/* ================================================================= */}
       {/* 5. INTERACTIVE LIVE GOLD LOAN CALCULATOR                          */}

@@ -6,8 +6,6 @@ const DocumentsTab = ({ user }) => {
   const docs = [
     { name: 'Aadhaar Card', icon: FileText, status: user?.aadhaarDocUrl ? 'Verified' : 'Not Uploaded', color: user?.aadhaarDocUrl ? 'emerald' : 'slate', url: user?.aadhaarDocUrl },
     { name: 'PAN Card', icon: CreditCard, status: user?.panDocUrl ? 'Verified' : 'Not Uploaded', color: user?.panDocUrl ? 'blue' : 'slate', url: user?.panDocUrl },
-    { name: 'Income Proof', icon: ShieldCheck, status: 'Not Uploaded', color: 'slate', url: null },
-    { name: 'Address Proof', icon: FileText, status: 'Not Uploaded', color: 'slate', url: null },
   ];
 
   return (

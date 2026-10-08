@@ -64,6 +64,7 @@ const Navbar = () => {
 
   const userNavLinks = [
     { name: 'Dashboard', path: '/dashboard' },
+    { name: 'Services', path: '/services' },
     { name: 'Apply Loan', path: '/dashboard?tab=apply' },
     { name: 'My Loans', path: '/dashboard?tab=loans' },
     { name: 'Payments', path: '/dashboard?tab=payments' },

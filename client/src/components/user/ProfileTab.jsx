@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, MapPin, Building2, CalendarDays } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building2, CalendarDays, Clock } from 'lucide-react';
 
 const ProfileTab = ({ user }) => {
   return (
@@ -70,6 +70,41 @@ const ProfileTab = ({ user }) => {
 
         </div>
       </div>
+
+      {/* Activity History */}
+      <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-8 shadow-sm">
+        <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+          <Clock size={20} className="text-blue-600" /> Recent Activity
+        </h3>
+        
+        {user.history && user.history.length > 0 ? (
+          <div className="space-y-6 relative before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+            {user.history.map((item, index) => (
+              <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                <div className="flex items-center justify-center w-6 h-6 rounded-full border border-white bg-blue-100 text-blue-600 shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow">
+                  <div className="w-2 h-2 rounded-full bg-blue-600"></div>
+                </div>
+                <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2rem)] p-4 rounded-2xl border border-slate-100 bg-white shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-sm text-slate-800">{item.action}</span>
+                    <span className="text-[10px] font-bold text-slate-400">{new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <p className="text-xs text-slate-500">{item.details}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Clock size={24} className="text-slate-300" />
+            </div>
+            <p className="text-sm font-bold text-slate-700">No recent activity</p>
+            <p className="text-xs text-slate-500 mt-1">Your recent actions will appear here.</p>
+          </div>
+        )}
+      </div>
+
     </motion.div>
   );
 };

@@ -57,6 +57,17 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid email or password' });
     }
 
+    // Log login activity
+    const entry = { action: 'Account Login', details: 'Successful login via web portal', date: new Date().toISOString() };
+    if (!user.history) user.history = [];
+    if (typeof user.save === 'function') {
+      user.history.unshift(entry);
+      await user.save();
+    } else {
+      user.history.unshift(entry);
+      await Store.updateUser(user._id || user.id, { history: user.history });
+    }
+
     const token = jwt.sign(
       {
         id: user._id || user.id,
@@ -109,6 +120,17 @@ router.post('/admin-login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+
+    // Log admin login activity
+    const entry = { action: 'Admin Login', details: 'Successful login to admin portal', date: new Date().toISOString() };
+    if (!user.history) user.history = [];
+    if (typeof user.save === 'function') {
+      user.history.unshift(entry);
+      await user.save();
+    } else {
+      user.history.unshift(entry);
+      await Store.updateUser(user._id || user.id, { history: user.history });
     }
 
     const token = jwt.sign(
@@ -170,6 +192,54 @@ router.get('/me/applications', verifyToken, async (req, res) => {
     );
     
     res.json(myApps);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Get Current User's Service Requests
+router.get('/me/service-requests', verifyToken, async (req, res) => {
+  try {
+    const user = await Store.findUserById(req.user.id || req.user._id);
+    const email = user ? user.email : req.user.email;
+    
+    const allRequests = await Store.getAllServiceRequests();
+    const myRequests = allRequests.filter(req => 
+      req.email === email ||
+      (req.customerId && req.customerId.toString() === (user._id || user.id).toString())
+    );
+    
+    res.json(myRequests);
+  } catch (err) {
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Add history entry to user
+router.post('/me/history', verifyToken, async (req, res) => {
+  try {
+    const { action, details } = req.body;
+    if (!action) return res.status(400).json({ message: 'Action is required' });
+
+    const user = await Store.findUserById(req.user.id || req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (!user.history) {
+      user.history = [];
+    }
+
+    const entry = { action, details, date: new Date().toISOString() };
+    
+    // Support for both mongoose and in-memory fallback
+    if (typeof user.save === 'function') {
+      user.history.unshift(entry); // add to top
+      await user.save();
+    } else {
+      user.history.unshift(entry);
+      await Store.updateUser(user._id || user.id, { history: user.history });
+    }
+
+    res.json(entry);
   } catch (err) {
     res.status(500).json({ message: 'Server error', error: err.message });
   }

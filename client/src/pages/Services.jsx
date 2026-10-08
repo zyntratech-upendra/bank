@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import {
   Coins,
@@ -34,6 +34,8 @@ const Services = () => {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(applyParam === 'true');
   const [selectedServiceForApply, setSelectedServiceForApply] = useState('Gold Loan');
 
+  const navigate = useNavigate();
+
   // Sync tab with URL search parameter
   useEffect(() => {
     if (typeParam) {
@@ -55,6 +57,11 @@ const Services = () => {
 
   // Open Apply Modal
   const openApplyModal = (serviceName) => {
+    const token = localStorage.getItem('bank_token');
+    if (!token) {
+      navigate('/login');
+      return;
+    }
     setSelectedServiceForApply(serviceName || 'Gold Loan');
     setIsApplyModalOpen(true);
   };
@@ -869,6 +876,11 @@ const Services = () => {
               <div className="pt-4 border-t border-slate-100 flex items-center justify-end">
                 <button
                   onClick={() => {
+                    const token = localStorage.getItem('bank_token');
+                    if (!token) {
+                      navigate('/login');
+                      return;
+                    }
                     setSelectedDynamicService(service.title);
                     setIsDynamicModalOpen(true);
                   }}

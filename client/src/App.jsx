@@ -45,6 +45,14 @@ function App() {
           {/* Dedicated Admin Portal Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route 
+            path="/admin/:tab/:id" 
+            element={
+              <AdminProtectedRoute>
+                <AdminDashboard />
+              </AdminProtectedRoute>
+            } 
+          />
+          <Route 
             path="/admin/:tab?" 
             element={
               <AdminProtectedRoute>

@@ -366,8 +366,8 @@ router.get('/service-requests', async (req, res) => {
 
 router.patch('/service-requests/:id/status', async (req, res) => {
   try {
-    const { status, remarks } = req.body;
-    const request = await Store.updateServiceRequestStatus(req.params.id, status, remarks);
+    const { status, remarks, extraData } = req.body;
+    const request = await Store.updateServiceRequestStatus(req.params.id, status, remarks, extraData);
     res.json(request);
   } catch (err) {
     res.status(500).json({ message: 'Error updating request', error: err.message });

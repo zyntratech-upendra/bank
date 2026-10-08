@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Landmark, CreditCard, Clock, CheckCircle2, AlertCircle, 
-  FileText, ShieldCheck, Upload, Banknote, IndianRupee, ArrowRight
+  FileText, ShieldCheck, Upload, Banknote, IndianRupee, ArrowRight,
+  MapPin, Loader2, Navigation
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
@@ -22,7 +23,35 @@ const UserDashboard = () => {
   const currentTab = query.get('tab') || 'dashboard';
   const [user, setUser] = useState(null);
   const [applications, setApplications] = useState([]);
+  const [bankRates, setBankRates] = useState([]);
+  const [dynamicServices, setDynamicServices] = useState([]);
+  const [locationsList, setLocationsList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedCity, setSelectedCity] = useState('');
+  const [isDetecting, setIsDetecting] = useState(false);
+
+  const handleDetectLocation = () => {
+    setIsDetecting(true);
+    if (!navigator.geolocation) {
+      setIsDetecting(false);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(async (position) => {
+      try {
+        const { latitude, longitude } = position.coords;
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+        const data = await response.json();
+        const city = data.address.city || data.address.town || data.address.village || 'Vijayawada';
+        setSelectedCity(city);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsDetecting(false);
+      }
+    }, () => {
+      setIsDetecting(false);
+    });
+  };
 
   useEffect(() => {
     // Normally you'd get this from a proper AuthContext, using localStorage for simplicity here
@@ -38,22 +67,69 @@ const UserDashboard = () => {
         const userRes = await api.get('/auth/me');
         if (userRes.data?.user) {
           setUser(userRes.data.user);
+          setSelectedCity(userRes.data.user.branch || 'Vijayawada');
           localStorage.setItem('bank_user', JSON.stringify(userRes.data.user));
         }
         
-        // Fetch applications (we'll fetch all and filter for now, or assume the backend filters)
-        // Since there is no specific user application endpoint yet, we'll try hitting admin if we can't,
-        // or just mock the applications if the API fails.
+        // Fetch applications and service requests
         try {
-          const appRes = await api.get('/auth/me/applications');
+          const [appRes, srRes] = await Promise.all([
+            api.get('/auth/me/applications'),
+            api.get('/auth/me/service-requests')
+          ]);
+          
+          let combined = [];
           if (appRes.data) {
-             setApplications(appRes.data);
+            combined = [...appRes.data];
           }
+          if (srRes.data) {
+            const formattedSRs = srRes.data.map(sr => {
+              // Try to extract an amount from formData
+              let extractedAmount = null;
+              if (sr.formData) {
+                const keysToCheck = ['Issued Amount', 'Expected Return Amount', 'Loan Amount Outstanding', 'Loan Amount', 'Amount', 'Final Settlement Value'];
+                for (const key of keysToCheck) {
+                  if (sr.formData[key]) {
+                    const val = Number(sr.formData[key].toString().replace(/[^0-9.]/g, ''));
+                    if (!isNaN(val) && val > 0) {
+                      extractedAmount = val;
+                      break;
+                    }
+                  }
+                }
+                // Fallback check
+                if (!extractedAmount) {
+                  for (const [key, value] of Object.entries(sr.formData)) {
+                    if ((key.toLowerCase().includes('amount') || key.toLowerCase().includes('value')) && value) {
+                      const val = Number(value.toString().replace(/[^0-9.]/g, ''));
+                      if (!isNaN(val) && val > 0) {
+                        extractedAmount = val;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+
+              return {
+                _id: sr._id,
+                loanType: sr.serviceName,
+                amount: extractedAmount,
+                status: sr.status,
+                createdAt: sr.createdAt,
+                isServiceRequest: true
+              };
+            });
+            combined = [...combined, ...formattedSRs];
+          }
+          
+          // Sort by newest first
+          combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          setApplications(combined);
         } catch (err) {
-          // Mock data if unauthorized
+          // Mock data if unauthorized or fail
           setApplications([
-            { _id: '1', loanType: 'Gold Loan', amount: 300000, status: 'Approved', createdAt: new Date(Date.now() - 1000000000).toISOString() },
-            { _id: '2', loanType: 'Loan Transfer', amount: 200000, status: 'Pending', createdAt: new Date(Date.now() - 50000000).toISOString() }
+            { _id: '1', loanType: 'Gold Loan', amount: 300000, status: 'Approved', createdAt: new Date(Date.now() - 1000000000).toISOString() }
           ]);
         }
       } catch (error) {
@@ -64,7 +140,23 @@ const UserDashboard = () => {
       }
     };
 
+    const fetchPublicData = async () => {
+      try {
+        const [ratesRes, servicesRes, locRes] = await Promise.all([
+          api.get('/public/bank-rates'),
+          api.get('/public/dynamic-services'),
+          api.get('/public/locations')
+        ]);
+        setBankRates(ratesRes.data || []);
+        setDynamicServices(servicesRes.data || []);
+        setLocationsList(locRes.data || []);
+      } catch (err) {
+        console.error('Failed to load public data', err);
+      }
+    };
+
     fetchDashboardData();
+    fetchPublicData();
   }, [navigate]);
 
   if (loading) {
@@ -97,7 +189,7 @@ const UserDashboard = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
           >
             {/* Active Loans */}
             <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -127,20 +219,7 @@ const UserDashboard = () => {
             </div>
           </div>
 
-          {/* Next EMI */}
-          <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-rose-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100">
-                <Clock size={24} className="stroke-[2]" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Next EMI Due</p>
-                <p className="text-3xl font-black text-slate-800">₹8,750</p>
-                <p className="text-[10px] font-semibold text-rose-500 mt-1">Due on 05 Oct 2026</p>
-              </div>
-            </div>
-          </div>
+
 
           {/* Applications */}
           <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -201,6 +280,88 @@ const UserDashboard = () => {
                   </div>
                 </motion.div>
 
+                {/* Today's Gold Rates & Available Services */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
+                  {/* Gold Rates Card */}
+                  <div className="bg-[#112340] rounded-3xl p-6 shadow-sm text-white">
+                    <div className="flex flex-wrap items-center justify-between mb-5 gap-4">
+                      <h2 className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-white/90 flex items-center gap-2">
+                        <Banknote size={16} className="text-[#f59e0b]" /> TODAY'S GOLD RATES
+                      </h2>
+                      
+                      <div className="relative">
+                        <select 
+                          value={selectedCity}
+                          onChange={(e) => setSelectedCity(e.target.value)}
+                          className="appearance-none bg-transparent text-xs font-bold text-white/80 outline-none pr-5 cursor-pointer hover:text-white transition-colors"
+                        >
+                          <option value="" className="text-black">All Branches</option>
+                          {locationsList.map((loc, i) => (
+                            <option key={i} value={loc.name} className="text-black">{loc.name}</option>
+                          ))}
+                          {/* Fallback options if DB empty */}
+                          {locationsList.length === 0 && (
+                            <>
+                              <option value="Vijayawada" className="text-black">Vijayawada</option>
+                              <option value="Hyderabad" className="text-black">Hyderabad</option>
+                              <option value="Chennai" className="text-black">Chennai</option>
+                            </>
+                          )}
+                        </select>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
+                          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      </div>
+                    </div>
+
+                    {bankRates && bankRates.filter(r => !selectedCity || r.cityName.toLowerCase() === selectedCity.toLowerCase()).length > 0 ? (
+                      <div className="space-y-3">
+                        {bankRates.filter(r => !selectedCity || r.cityName.toLowerCase() === selectedCity.toLowerCase()).slice(0, 3).map((rate, idx) => (
+                          <div key={idx} className="flex justify-between items-center p-4 rounded-xl bg-[#203657] border border-[#2d466b]/30">
+                            <span className="text-sm font-bold text-white lowercase">{rate.bankName || 'sbi'}</span>
+                            <div className="text-right">
+                              <span className="text-[#f59e0b] font-bold text-base block leading-tight">{rate.interestRate}% <span className="text-[10px] text-white/70 font-normal">p.a</span></span>
+                              <span className="text-xs text-white/70">₹{rate.goldRatePerGram}/g</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-8 bg-[#203657] rounded-xl text-center border border-[#2d466b]/30">
+                        <p className="text-sm text-white/70">No rates available for {selectedCity || 'this location'}.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dynamic Services Card */}
+                  <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
+                    <h2 className="text-sm font-black uppercase tracking-widest text-[#0e274a] mb-4 flex items-center gap-2">
+                      <ShieldCheck size={18} className="text-emerald-500" /> Featured Services
+                    </h2>
+                    {dynamicServices && dynamicServices.length > 0 ? (
+                      <div className="space-y-3">
+                        {dynamicServices.slice(0, 3).map((service, idx) => (
+                          <div key={idx} className="flex flex-col p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition-colors">
+                            <span className="text-sm font-bold text-slate-800">{service.title}</span>
+                            <span className="text-xs text-slate-500 mt-1 line-clamp-1">{service.description}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                        <p className="text-sm text-slate-500">More services coming soon.</p>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+
                 {/* Recent Applications Table */}
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
@@ -209,7 +370,7 @@ const UserDashboard = () => {
                   className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl shadow-sm overflow-hidden"
                 >
                   <div className="px-6 py-5 border-b border-white/60 flex items-center justify-between">
-                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Recent Applications</h2>
+                    <h2 className="text-sm font-bold text-slate-800 uppercase tracking-widest">Recent Applications & Requests</h2>
                     <button onClick={() => navigate('/dashboard?tab=loans')} className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">
                       View All <ArrowRight size={14} />
                     </button>

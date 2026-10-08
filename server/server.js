@@ -15,7 +15,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Database connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bank-loans';
@@ -36,6 +37,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/loans', loanRoutes);
 const publicRoutes = require('./routes/public');
 app.use('/api/public', publicRoutes);
+
+const uploadRoutes = require('./routes/upload');
+app.use('/api/upload', uploadRoutes);
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({ 

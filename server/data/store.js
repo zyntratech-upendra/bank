@@ -128,34 +128,60 @@ const Store = {
   // Applications
   async getDashboardStats() {
     let applications = [];
+    let serviceRequests = [];
     if (isDbConnected()) {
       applications = await Loan.find().lean();
+      serviceRequests = await ServiceRequest.find().lean();
     } else {
       applications = memApplications;
     }
 
-    const totalApplications = applications.length;
-    const pendingVerification = applications.filter(a => a.status === 'KYC Pending' || a.status === 'Document Pending' || a.status === 'Pending').length;
-    const approvedToday = applications.filter(a => a.status === 'Approved').length;
+    const unifiedList = [
+      ...applications,
+      ...serviceRequests.map(sr => ({
+        ...sr,
+        loanType: sr.serviceName,
+        amount: sr.extraData?.['Issued Amount'] || sr.extraData?.['Disbursed Amount'] || 0,
+        isServiceRequest: true,
+        isApproved: sr.status === 'Completed' || sr.status === 'Cleared',
+        isCleared: sr.status === 'Cleared',
+        isRejected: sr.status === 'Rejected',
+        isPending: ['Pending', 'Under Review', 'Verified'].includes(sr.status)
+      }))
+    ];
+
+    unifiedList.forEach(a => {
+      if (!a.isServiceRequest) {
+        a.isApproved = a.status === 'Approved' || a.status === 'Disbursed';
+        a.isRejected = a.status === 'Rejected';
+        a.isPending = ['KYC Pending', 'Document Pending', 'Pending'].includes(a.status);
+      }
+    });
+
+    const totalApplications = unifiedList.length;
+    const pendingVerification = unifiedList.filter(a => a.isPending).length;
     
+    // Original code checked all approved loans for "approvedToday", preserving logic
+    const allApproved = unifiedList.filter(a => a.isApproved).length;
+
     // Calculate total disbursed amount
-    const totalDisbursedValue = applications
-      .filter(a => a.status === 'Approved' && a.amount)
+    const totalDisbursedValue = unifiedList
+      .filter(a => a.isApproved && a.amount)
       .reduce((sum, app) => {
         const val = Number(app.amount.toString().replace(/,/g, '')) || 0;
         return sum + val;
       }, 0);
     const disbursedAmount = `₹${(totalDisbursedValue / 100000).toFixed(2)} Lakh`;
-    const activeLoans = applications.filter(a => a.status === 'Approved').length;
+    const activeLoans = unifiedList.filter(a => a.isApproved && !a.isCleared).length;
 
     const distMap = {};
-    applications.forEach(a => {
+    unifiedList.forEach(a => {
       if (a.loanType) {
         distMap[a.loanType] = (distMap[a.loanType] || 0) + 1;
       }
     });
 
-    const colors = ['#e2a033', '#3b82f6', '#10b981', '#6366f1', '#f59e0b'];
+    const colors = ['#e2a033', '#3b82f6', '#10b981', '#6366f1', '#f59e0b', '#8b5cf6'];
     const loanTypeDistribution = Object.keys(distMap).map((key, idx) => ({
       name: key,
       count: distMap[key],
@@ -173,13 +199,13 @@ const Store = {
       weeklyMap[dateStr] = { date: dateStr, received: 0, approved: 0, rejected: 0 };
     }
 
-    applications.forEach(app => {
+    unifiedList.forEach(app => {
       const appDate = new Date(app.createdAt || Date.now());
       const dateStr = appDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       if (weeklyMap[dateStr]) {
         weeklyMap[dateStr].received++;
-        if (app.status === 'Approved') weeklyMap[dateStr].approved++;
-        if (app.status === 'Rejected') weeklyMap[dateStr].rejected++;
+        if (app.isApproved) weeklyMap[dateStr].approved++;
+        if (app.isRejected) weeklyMap[dateStr].rejected++;
       }
     });
 
@@ -189,13 +215,13 @@ const Store = {
       metrics: {
         totalApplications,
         pendingVerification,
-        approvedToday,
+        approvedToday: allApproved,
         disbursedAmount,
         activeLoans
       },
       weeklyTrend,
       loanTypeDistribution,
-      recentApplications: applications.sort((a, b) => new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now())).slice(0, 10)
+      recentApplications: unifiedList.sort((a, b) => new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now())).slice(0, 10)
     };
   },
 
@@ -524,9 +550,16 @@ const Store = {
     return null;
   },
 
-  async updateServiceRequestStatus(id, status, remarks) {
+  async updateServiceRequestStatus(id, status, remarks, extraData) {
     if (isDbConnected()) {
-      return await ServiceRequest.findByIdAndUpdate(id, { status, adminRemarks: remarks }, { new: true });
+      let update = { status, adminRemarks: remarks };
+      if (extraData) {
+        const doc = await ServiceRequest.findById(id);
+        if (doc) {
+          update.formData = { ...(doc.formData || {}), ...extraData };
+        }
+      }
+      return await ServiceRequest.findByIdAndUpdate(id, update, { new: true });
     }
     return null;
   }

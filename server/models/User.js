@@ -19,7 +19,12 @@ const userSchema = new mongoose.Schema({
   panNumber: { type: String },
   aadhaarDocUrl: { type: String },
   panDocUrl: { type: String },
-  profilePicUrl: { type: String }
+  profilePicUrl: { type: String },
+  history: [{
+    action: { type: String, required: true },
+    date: { type: Date, default: Date.now },
+    details: { type: String }
+  }]
 }, { timestamps: true });
 
 userSchema.pre('save', async function() {

@@ -105,24 +105,21 @@ const Register = () => {
     setUploadingDoc(field);
     const data = new FormData();
     data.append("file", file);
-    data.append("upload_preset", "banking_preset"); // Use unsigned upload preset from Cloudinary
-    data.append("cloud_name", "djhhsqood"); // Real cloud name from server config
 
     try {
-      const res = await fetch("https://api.cloudinary.com/v1_1/djhhsqood/image/upload", {
-        method: "POST",
-        body: data,
+      const res = await api.post("/upload", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
-      const uploadedImage = await res.json();
-      if (uploadedImage.secure_url) {
-        setFormData(prev => ({ ...prev, [field]: uploadedImage.secure_url }));
+      if (res.data.secure_url) {
+        setFormData(prev => ({ ...prev, [field]: res.data.secure_url }));
       } else {
-        // Fallback if cloud name is invalid
         setFormData(prev => ({ ...prev, [field]: URL.createObjectURL(file) }));
       }
     } catch (err) {
-      console.error("Cloudinary Upload Error", err);
-      // Fallback for visual testing if cloudinary is not configured
+      console.error("Upload Error", err);
+      // Fallback for visual testing if upload fails
       setFormData(prev => ({ ...prev, [field]: URL.createObjectURL(file) }));
     } finally {
       setUploadingDoc('');

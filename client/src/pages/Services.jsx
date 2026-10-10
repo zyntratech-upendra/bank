@@ -23,6 +23,7 @@ import {
   Percent,
   Check
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import DynamicServiceModal from '../components/DynamicServiceModal';
 
 const Services = () => {
@@ -249,7 +250,7 @@ const Services = () => {
     },
     {
       id: 'other',
-      title: 'Other Banking Services',
+      title: 'Other Shayaan Swarna Mitra',
       badge: 'Govt. Bank Services',
       badgeBg: 'bg-[#faebee] border-[#f7c2cb] text-[#a8253b]',
       icon: Layers,
@@ -264,7 +265,7 @@ const Services = () => {
       ],
       amount: 'Comprehensive Services',
       tenure: 'Ongoing Support',
-      ctaText: 'Explore Banking Services'
+      ctaText: 'Explore Shayaan Swarna Mitra'
     }
   ];
 
@@ -274,21 +275,44 @@ const Services = () => {
       {/* ================================================================= */}
       {/* 1. HERO HEADER                                                    */}
       {/* ================================================================= */}
-      <section className="bg-gradient-to-b from-[#f3f6fa] via-[#faf8f4] to-[#fafbfc] border-b border-slate-200/80 pt-10 pb-12 sm:pt-14 sm:pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <section className="relative bg-gradient-to-b from-[#f3f6fa] via-[#faf8f4] to-[#fafbfc] border-b border-slate-200/80 pt-10 pb-12 sm:pt-14 sm:pb-16 overflow-hidden">
+        
+        {/* Animated Background blob */}
+        <motion.div 
+          animate={{ scale: [1, 1.1, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute right-0 top-0 w-80 h-80 bg-blue-400/10 rounded-full blur-3xl pointer-events-none"
+        />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           
           {/* Trust Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fcedd7] border border-[#f5d7ad] text-[#935b0b] text-[13px] font-bold tracking-wide shadow-2xs mb-5">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-[#f5d7ad] text-[#935b0b] text-[13px] font-bold tracking-wide shadow-sm mb-5"
+          >
             <ShieldCheck size={16} className="text-[#c48722]" />
             <span>Government Bank Authorized Partner • Instant Disbursal</span>
-          </div>
+          </motion.div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-[#0e274a] tracking-tight mb-4">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-3xl sm:text-4xl lg:text-5xl font-display font-extrabold text-[#0e274a] tracking-tight mb-4"
+          >
             Our Financial Services
-          </h1>
-          <p className="text-slate-600 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed mb-8">
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-slate-600 text-base sm:text-lg max-w-3xl mx-auto leading-relaxed mb-8"
+          >
             Complete Banking and Lending Solutions for a Better Tomorrow, powered by leading Government Banks with the lowest interest rates in the market.
-          </p>
+          </motion.p>
 
           {/* Quick Stats Strip */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
@@ -1188,7 +1212,7 @@ const Services = () => {
                         <option value="One Lending Solution">One Lending Solution</option>
                         <option value="Personal Loan">Personal Loan</option>
                         <option value="Business Loan">Business Loan</option>
-                        <option value="Other Banking Services">Other Banking Services</option>
+                        <option value="Other Shayaan Swarna Mitra">Other Shayaan Swarna Mitra</option>
                       </select>
                     </div>
 

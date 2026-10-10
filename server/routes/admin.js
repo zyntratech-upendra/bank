@@ -385,4 +385,73 @@ router.get('/customers', async (req, res) => {
   }
 });
 
+// Payments & Receipts (Amount Given and Taken records)
+const PaymentReceipt = require('../models/PaymentReceipt');
+
+router.get('/payments', async (req, res) => {
+  try {
+    const receipts = await PaymentReceipt.find().sort({ createdAt: -1 });
+    res.json(receipts);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching payments', error: err.message });
+  }
+});
+
+router.post('/payments', async (req, res) => {
+  try {
+    const {
+      type,
+      customerId,
+      customerName,
+      customerPhone,
+      customerEmail,
+      loanId,
+      amount,
+      paymentMode,
+      transactionReference,
+      paymentDate,
+      notes,
+      branch
+    } = req.body;
+
+    if (!type || !customerName || !amount) {
+      return res.status(400).json({ message: 'Type, Customer Name and Amount are required.' });
+    }
+
+    const receiptCount = await PaymentReceipt.countDocuments();
+    const receiptNumber = `RCP-${new Date().getFullYear()}-${String(receiptCount + 1).padStart(4, '0')}`;
+
+    const newReceipt = new PaymentReceipt({
+      receiptNumber,
+      type, // 'GIVEN' or 'TAKEN'
+      customerId: customerId || undefined,
+      customerName,
+      customerPhone: customerPhone || '',
+      customerEmail: customerEmail || '',
+      loanId: loanId || '',
+      amount: Number(amount),
+      paymentMode: paymentMode || 'Bank Transfer (NEFT/RTGS)',
+      transactionReference: transactionReference || '',
+      paymentDate: paymentDate || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      notes: notes || '',
+      receivedOrIssuedBy: req.admin?.name || 'Ravi Kumar (Admin)',
+      branch: branch || 'Vijayawada'
+    });
+
+    await newReceipt.save();
+    res.status(201).json({ message: 'Payment record created successfully', receipt: newReceipt });
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating payment record', error: err.message });
+  }
+});
+
+router.delete('/payments/:id', async (req, res) => {
+  try {
+    await PaymentReceipt.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Payment receipt deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting payment record', error: err.message });
+  }
+});
+
 module.exports = router;

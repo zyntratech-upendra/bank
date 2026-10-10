@@ -24,18 +24,12 @@ const navItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { id: 'applications', label: 'Applications', icon: FileText },
   { id: 'customers', label: 'Customers', icon: Users },
-  { id: 'gold-loan', label: 'Gold Loan', icon: Coins },
-  { id: 'loan-transfer', label: 'Loan Transfer', icon: ArrowLeftRight },
-  { id: 'one-lending', label: 'One Lending', icon: CreditCard },
-  { id: 'disbursements', label: 'Disbursements', icon: Wallet },
-  { id: 'repayments', label: 'Repayments', icon: Receipt },
-  { id: 'kyc', label: 'KYC & Documents', icon: ShieldCheck },
-  { id: 'reports', label: 'Reports', icon: BarChart3 },
   { id: 'service-requests', label: 'Service Requests', icon: HelpCircle },
   { id: 'manage-services', label: 'Manage Services', icon: LayoutDashboard },
   { id: 'locations', label: 'Service Locations', icon: MapPin },
   { id: 'bank-rates', label: 'Bank Gold Rates', icon: Coins },
-  { id: 'branch-operations', label: 'Branch Operations', icon: Building2 },
+  { id: 'reports', label: 'Reports', icon: BarChart3 },
+  { id: 'repayments', label: 'Payments & Receipts', icon: Receipt },
   { id: 'users-roles', label: 'Users & Roles', icon: UserCog },
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
@@ -51,21 +45,9 @@ const AdminSidebar = ({ activeTab, setActiveTab, sidebarOpen, setSidebarOpen, si
       ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
     `}>
       {/* Brand Header */}
-      <div className={`h-20 flex items-center border-b border-slate-200 bg-white transition-all overflow-hidden ${sidebarCollapsed ? 'justify-center px-0' : 'px-6'}`}>
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-tr from-blue-700 to-blue-500 text-white p-2.5 rounded-xl shadow-sm shrink-0">
-            <Landmark size={24} className="stroke-[2.5]" />
-          </div>
-          {!sidebarCollapsed && (
-            <div className="whitespace-nowrap">
-              <h1 className="text-base font-black tracking-tight text-slate-900 leading-tight">
-                BANKING SERVICES
-              </h1>
-              <p className="text-[10px] font-bold tracking-[0.18em] text-blue-600 leading-none mt-0.5">
-                TRUSTED FINANCIAL PARTNER
-              </p>
-            </div>
-          )}
+      <div className={`h-24 py-2 flex items-center border-b border-slate-200 bg-white transition-all overflow-hidden ${sidebarCollapsed ? 'justify-center px-0' : 'px-4'}`}>
+        <div className="flex items-center justify-center w-full">
+          <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className={`${sidebarCollapsed ? 'h-10' : 'h-16 w-[90%]'} object-contain transition-all`} />
         </div>
       </div>
 

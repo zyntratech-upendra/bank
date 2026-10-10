@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../utils/api';
+import { motion } from 'framer-motion';
 import {
   Mail,
   Phone,
@@ -56,17 +57,30 @@ const Contact = () => {
       <section className="relative pt-10 pb-14 lg:pt-14 lg:pb-16 bg-gradient-to-b from-[#faf7f2] via-[#fbf9f5] to-white border-b border-slate-200/70 overflow-hidden">
         
         {/* Ambient background glows */}
-        <div className="absolute right-0 top-0 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute left-0 bottom-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl pointer-events-none translate-y-1/3 -translate-x-1/3" />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.2, 0.4, 0.2] }}
+          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute right-0 top-0 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" 
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+          className="absolute left-0 bottom-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl pointer-events-none translate-y-1/3 -translate-x-1/3" 
+        />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10"
+        >
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-[#0e274a] leading-tight mb-4">
             Get in <span className="text-[#c48722]">Touch</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
             We are here to help you with all your financial needs. Talk directly with our dedicated Government Bank loan advisors.
           </p>
-        </div>
+        </motion.div>
       </section>
 
       {/* ================================================================= */}
@@ -88,7 +102,7 @@ const Contact = () => {
 
             <div className="bg-gradient-to-r from-[#f1f7fe] to-white border border-[#d2e4fb] rounded-2xl p-5 flex items-center gap-4 shadow-xs">
               <div className="w-12 h-12 rounded-xl bg-[#e0edfd] text-[#1b5cb7] flex items-center justify-center shrink-0">
-                <Landmark size={22} />
+                <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 w-auto object-contain" />
               </div>
               <div>
                 <h4 className="font-bold text-[#0e274a] text-sm">Govt. Bank Transfer Desk</h4>

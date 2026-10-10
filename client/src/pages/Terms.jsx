@@ -11,7 +11,7 @@ const Terms = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link to="/" className="inline-flex items-center space-x-3 group">
             <div className="bg-[#0e274a] text-white p-2.5 rounded-xl shadow-md transition-transform group-hover:scale-105">
-              <Landmark size={24} className="stroke-[2.2]" />
+              <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 w-auto object-contain" />
             </div>
             <div>
               <span className="text-xl font-black tracking-tight block leading-none text-[#0e274a]">BANKING</span>
@@ -38,7 +38,7 @@ const Terms = () => {
                 <CheckCircle2 className="text-[#c48722]" size={24} /> 1. Acceptance of Terms
               </h2>
               <p>
-                By creating an account and using the services provided by Banking Services ("we", "us", or "our"), you ("user", "customer") agree to comply with and be bound by these Terms and Conditions. These terms govern your access to our online platform, gold loan services, deposits, and digital transfers.
+                By creating an account and using the services provided by Shayaan Swarna Mitra ("we", "us", or "our"), you ("user", "customer") agree to comply with and be bound by these Terms and Conditions. These terms govern your access to our online platform, gold loan services, deposits, and digital transfers.
               </p>
             </section>
 

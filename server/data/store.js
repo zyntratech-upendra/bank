@@ -9,15 +9,47 @@ const Service = require('../models/Service');
 const ServiceRequest = require('../models/ServiceRequest');
 const { initialUsers, initialApplications, initialSettings, initialLocations } = require('./mockData');
 
-// In-memory clones
-let memUsers = JSON.parse(JSON.stringify(initialUsers));
-let memApplications = JSON.parse(JSON.stringify(initialApplications));
-let memSettings = JSON.parse(JSON.stringify(initialSettings));
-let memLocations = JSON.parse(JSON.stringify(initialLocations));
-
-// Hash memory admin password
 const DEFAULT_ADMIN_PASSWORD_HASH = bcrypt.hashSync(process.env.ADMIN_DEFAULT_PASSWORD || 'Admin@123', 10);
-memUsers[0].password = DEFAULT_ADMIN_PASSWORD_HASH;
+const DEFAULT_USER_PASSWORD_HASH = bcrypt.hashSync('User@123', 10);
+
+// In-memory containers seeded with realistic mock data
+const applicantUsers = initialApplications.map((app, idx) => ({
+  _id: `mem_usr_app_${idx + 1}`,
+  id: `USR10${idx + 1}`,
+  name: app.applicantName,
+  email: app.applicantEmail,
+  phone: app.applicantMobile,
+  role: 'user',
+  title: 'Customer',
+  branch: app.branch || 'Vijayawada',
+  status: 'Active',
+  avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(app.applicantName)}&background=0e274a&color=fff&size=128`,
+  password: DEFAULT_USER_PASSWORD_HASH
+}));
+
+let memUsers = [
+  ...initialUsers.map(u => ({
+    ...u,
+    password: (u.role === 'admin' || u.role === 'manager') ? DEFAULT_ADMIN_PASSWORD_HASH : DEFAULT_USER_PASSWORD_HASH
+  })),
+  ...applicantUsers
+];
+let memApplications = [...initialApplications];
+let memSettings = [...initialSettings];
+let memLocations = [...initialLocations];
+let memBankRates = [
+  { bankName: 'Union Bank of India', branchName: 'Bunder Road Branch', cityName: 'Vijayawada', goldRatePerGram: 6450, interestRate: 8.4 },
+  { bankName: 'Canara Bank', branchName: 'Governorpet Branch', cityName: 'Vijayawada', goldRatePerGram: 6420, interestRate: 8.5 },
+  { bankName: 'State Bank of India', branchName: 'MG Road Main Branch', cityName: 'Vijayawada', goldRatePerGram: 6400, interestRate: 8.65 },
+  { bankName: 'HDFC Bank', branchName: 'Banjara Hills', cityName: 'Hyderabad', goldRatePerGram: 6480, interestRate: 8.8 }
+];
+let memServices = [
+  { title: 'Gold Loan', description: 'Lowest interest rates backed by govt & partner banks. Up to 75% LTV.', status: 'Active' },
+  { title: 'Loan Transfer', description: 'Switch high interest loans to government banks seamlessly with zero penalty.', status: 'Active' },
+  { title: 'One Lending', description: 'Single window unified loan eligibility across multiple partner banks.', status: 'Active' },
+  { title: 'Business Loan', description: 'Collateral-free and MSME loan solutions for enterprises.', status: 'Active' }
+];
+let memServiceRequests = [];
 
 function isDbConnected() {
   return mongoose.connection && mongoose.connection.readyState === 1;
@@ -53,7 +85,43 @@ const Store = {
         console.log(`[Store] Seeded default Admin user: ${adminEmail}`);
       }
 
-      // Only seeding the Admin user, no other demo data.
+      // Seed demo users if DB is mostly empty
+      const userCount = await User.countDocuments();
+      if (userCount <= 1) {
+        for (const u of initialUsers) {
+          if (u.email === adminEmail) continue;
+          const exists = await User.findOne({ email: u.email });
+          if (!exists) {
+            await new User({ ...u, password: 'User@123' }).save();
+          }
+        }
+        for (const app of initialApplications) {
+          const exists = await User.findOne({ email: app.applicantEmail });
+          if (!exists) {
+            await new User({
+              name: app.applicantName,
+              email: app.applicantEmail,
+              phone: app.applicantMobile,
+              role: 'user',
+              title: 'Customer',
+              branch: app.branch || 'Vijayawada',
+              status: 'Active',
+              password: 'User@123'
+            }).save();
+          }
+        }
+        console.log('[Store] Seeded mock users into MongoDB');
+      }
+
+      // Seed demo loans if DB is empty
+      const loanCount = await Loan.countDocuments();
+      if (loanCount === 0) {
+        for (const app of initialApplications) {
+          await new Loan(app).save();
+        }
+        console.log('[Store] Seeded mock applications into MongoDB');
+      }
+
     } catch (err) {
       console.error('[Store] Seed error:', err.message);
     }
@@ -258,6 +326,33 @@ const Store = {
     return list;
   },
 
+  async createApplication(data) {
+    if (isDbConnected()) {
+      const count = await Loan.countDocuments();
+      const currentYear = new Date().getFullYear();
+      const applicationId = data.applicationId || `APP${currentYear}${String(count + 1).padStart(3, '0')}`;
+      const newLoan = new Loan({
+        ...data,
+        applicationId
+      });
+      await newLoan.save();
+      return newLoan.toObject ? newLoan.toObject() : newLoan;
+    }
+    const currentYear = new Date().getFullYear();
+    const applicationId = data.applicationId || `APP${currentYear}${String(memApplications.length + 1).padStart(3, '0')}`;
+    const newApp = {
+      _id: 'app_' + Date.now(),
+      applicationId,
+      status: 'KYC Pending',
+      submittedOn: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
+      submittedAt: new Date(),
+      history: [{ action: 'Application submitted', by: data.applicantName || 'Applicant', date: new Date().toLocaleString('en-GB') }],
+      ...data
+    };
+    memApplications.unshift(newApp);
+    return newApp;
+  },
+
   async getApplicationById(id) {
     if (isDbConnected()) {
       return await Loan.findOne({
@@ -361,6 +456,9 @@ const Store = {
         disbursedBy: adminName
       }
     };
+    if (disbursementData.interestRate) update.interestRate = disbursementData.interestRate;
+    if (disbursementData.tenure) update.loanTenure = disbursementData.tenure;
+    if (disbursementData.amount) update.amount = disbursementData.amount;
     const historyEntry = {
       action: `Loan disbursed ₹${Number(disbursementData.amount || 0).toLocaleString('en-IN')}`,
       by: adminName,
@@ -477,7 +575,7 @@ const Store = {
     if (isDbConnected()) {
       return await mongoose.model('BankRate').find().sort({ createdAt: -1 });
     }
-    return [];
+    return memBankRates;
   },
 
   async addBankRate(rateData) {
@@ -486,12 +584,19 @@ const Store = {
       await newRate.save();
       return newRate;
     }
-    return null;
+    const newRate = { _id: 'br_' + Date.now(), ...rateData };
+    memBankRates.unshift(newRate);
+    return newRate;
   },
 
   async updateBankRate(id, rateData) {
     if (isDbConnected()) {
       return await mongoose.model('BankRate').findByIdAndUpdate(id, rateData, { new: true });
+    }
+    const idx = memBankRates.findIndex(r => r._id === id || r.id === id);
+    if (idx !== -1) {
+      memBankRates[idx] = { ...memBankRates[idx], ...rateData };
+      return memBankRates[idx];
     }
     return null;
   },
@@ -500,6 +605,10 @@ const Store = {
     if (isDbConnected()) {
       return await mongoose.model('BankRate').findByIdAndDelete(id);
     }
+    const idx = memBankRates.findIndex(r => r._id === id || r.id === id);
+    if (idx !== -1) {
+      return memBankRates.splice(idx, 1)[0];
+    }
     return null;
   },
   // Services
@@ -507,7 +616,7 @@ const Store = {
     if (isDbConnected()) {
       return await Service.find().sort({ createdAt: -1 });
     }
-    return [];
+    return memServices;
   },
 
   async addService(serviceData) {
@@ -516,12 +625,19 @@ const Store = {
       await newService.save();
       return newService;
     }
-    return null;
+    const newService = { _id: 'srv_' + Date.now(), ...serviceData };
+    memServices.unshift(newService);
+    return newService;
   },
 
   async updateService(id, serviceData) {
     if (isDbConnected()) {
       return await Service.findByIdAndUpdate(id, serviceData, { new: true });
+    }
+    const idx = memServices.findIndex(s => s._id === id || s.id === id);
+    if (idx !== -1) {
+      memServices[idx] = { ...memServices[idx], ...serviceData };
+      return memServices[idx];
     }
     return null;
   },
@@ -529,6 +645,10 @@ const Store = {
   async deleteService(id) {
     if (isDbConnected()) {
       return await Service.findByIdAndDelete(id);
+    }
+    const idx = memServices.findIndex(s => s._id === id || s.id === id);
+    if (idx !== -1) {
+      return memServices.splice(idx, 1)[0];
     }
     return null;
   },
@@ -538,7 +658,7 @@ const Store = {
     if (isDbConnected()) {
       return await ServiceRequest.find().sort({ createdAt: -1 });
     }
-    return [];
+    return memServiceRequests;
   },
 
   async createServiceRequest(requestData) {
@@ -547,7 +667,14 @@ const Store = {
       await newReq.save();
       return newReq;
     }
-    return null;
+    const newReq = {
+      _id: 'sr_' + Date.now(),
+      status: 'Pending',
+      createdAt: new Date().toISOString(),
+      ...requestData
+    };
+    memServiceRequests.unshift(newReq);
+    return newReq;
   },
 
   async updateServiceRequestStatus(id, status, remarks, extraData) {

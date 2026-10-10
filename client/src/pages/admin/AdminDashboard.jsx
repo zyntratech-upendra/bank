@@ -13,7 +13,6 @@ import ServiceRequestsView from '../../components/admin/ServiceRequestsView';
 import DashboardOverviewView from '../../components/admin/views/DashboardOverviewView';
 import ApplicationsView from '../../components/admin/views/ApplicationsView';
 import KycDocumentsView from '../../components/admin/views/KycDocumentsView';
-import KycDocumentsView2 from '../../components/admin/views/KycDocumentsView2';
 import CustomersView from '../../components/admin/views/CustomersView';
 import GoldLoanView from '../../components/admin/views/GoldLoanView';
 import DisbursementsView from '../../components/admin/views/DisbursementsView';
@@ -97,18 +96,18 @@ const AdminDashboard = () => {
 
   // Disbursement Form State
   const [disbursementForm, setDisbursementForm] = useState({
-    appId: 'APP2026001',
-    customerName: 'Suresh Babu',
+    appId: '',
+    customerName: '',
     loanType: 'Gold Loan',
-    amount: '3,00,000',
-    disbursementDate: '24/09/2026',
+    amount: '',
+    disbursementDate: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }),
     interestRate: '8.5% p.a.',
     tenure: '12 Months',
     repaymentMode: 'Monthly EMI',
-    firstEmiDate: '24/10/2026',
-    emiAmount: '26,663',
-    bankAccount: 'XXXXXXXX1234 - SBI',
-    remarks: 'Approved after verification of gold ornaments.',
+    firstEmiDate: '',
+    emiAmount: '0',
+    bankAccount: '',
+    remarks: '',
     verifiedCheckbox: false
   });
 
@@ -291,6 +290,7 @@ const AdminDashboard = () => {
 
   
   const commonProps = {
+    loading,
     adminUser, stats, selectedBranch, setSelectedBranch,
     applications, filteredApplications, getStatusBadge,
     setActiveTab, setSelectedApplication, showToast,
@@ -403,13 +403,6 @@ const AdminDashboard = () => {
           {/* 10. BRANCH OPERATIONS VIEW */}
           {/* ========================================================= */}
           {activeTab === 'branch-operations' && <BranchOperationsView {...commonProps} />}
-
-
-
-          {/* ========================================================= */}
-          {/* 12. KYC & DOCUMENTS VIEW */}
-          {/* ========================================================= */}
-          {activeTab === 'kyc' && <KycDocumentsView2 {...commonProps} />}
 
 
           {/* ========================================================= */}

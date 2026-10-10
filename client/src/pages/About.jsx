@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   Landmark,
   Compass,
@@ -28,14 +29,27 @@ const About = () => {
       <section className="relative pt-8 pb-16 lg:pt-12 lg:pb-20 bg-gradient-to-b from-[#faf7f2] via-[#fbf9f5] to-white border-b border-slate-200/70 overflow-hidden">
         
         {/* Subtle decorative background glow */}
-        <div className="absolute right-0 top-0 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" />
-        <div className="absolute left-0 bottom-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl pointer-events-none translate-y-1/3 -translate-x-1/3" />
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+          className="absolute right-0 top-0 w-96 h-96 bg-amber-200/20 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/3" 
+        />
+        <motion.div 
+          animate={{ rotate: -360 }}
+          transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
+          className="absolute left-0 bottom-0 w-80 h-80 bg-blue-100/30 rounded-full blur-3xl pointer-events-none translate-y-1/3 -translate-x-1/3" 
+        />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          <div className="max-w-3xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl"
+          >
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-black text-[#0e274a] leading-[1.12] tracking-tight mb-5">
-              About <span className="text-[#c48722]">BANKING SERVICES</span>
+              About <span className="text-[#c48722]">SHAYAAN SWARNA MITRA</span>
             </h1>
             <p className="text-lg sm:text-xl text-slate-600 leading-relaxed font-normal">
               Committed to Making Financial Services Simple, Safe and Accessible for Everyone through our authorized Nationalized Government Bank tie-ups.
@@ -43,21 +57,23 @@ const About = () => {
 
             {/* Trust Highlights Strip */}
             <div className="flex flex-wrap items-center gap-3 pt-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-2xs">
-                <Landmark size={14} className="text-[#0e274a]" />
-                <span>Govt. Bank Facilitated</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-2xs">
-                <ShieldCheck size={14} className="text-emerald-600" />
-                <span>100% Safe Strongroom Lockers</span>
-              </div>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-bold text-slate-700 shadow-2xs">
-                <Percent size={14} className="text-[#c48722]" />
-                <span>Starting from 8.50% p.a.</span>
-              </div>
+              {[
+                { icon: Landmark, color: 'text-[#0e274a]', text: 'Govt. Bank Facilitated' },
+                { icon: ShieldCheck, color: 'text-emerald-600', text: '100% Safe Strongroom Lockers' },
+                { icon: Percent, color: 'text-[#c48722]', text: 'Starting from 8.50% p.a.' }
+              ].map((item, idx) => (
+                <motion.div 
+                  key={idx}
+                  whileHover={{ scale: 1.05 }}
+                  className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-slate-200 text-xs font-bold text-slate-700 shadow-sm"
+                >
+                  <item.icon size={14} className={item.color} />
+                  <span>{item.text}</span>
+                </motion.div>
+              ))}
             </div>
 
-          </div>
+          </motion.div>
 
         </div>
       </section>
@@ -82,7 +98,7 @@ const About = () => {
               </div>
 
               <p className="text-[15.5px] sm:text-[16.5px] text-slate-600 leading-relaxed">
-                <strong className="text-[#0e274a] font-bold">BANKING SERVICES</strong> was founded with a singular, resolute mission: to democratize institutional credit for every Indian family and enterprise. For decades, millions of hardworking borrowers have been trapped in the vicious cycle of local pawn brokers and unregulated private moneylenders charging extortionate interest rates of 24% to 36% p.a.
+                <strong className="text-[#0e274a] font-bold">SHAYAAN SWARNA MITRA</strong> was founded with a singular, resolute mission: to democratize institutional credit for every Indian family and enterprise. For decades, millions of hardworking borrowers have been trapped in the vicious cycle of local pawn brokers and unregulated private moneylenders charging extortionate interest rates of 24% to 36% p.a.
               </p>
 
               <p className="text-[15.5px] sm:text-[16.5px] text-slate-600 leading-relaxed">
@@ -278,7 +294,7 @@ const About = () => {
             
             <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 z-10">
               <div className="w-16 h-16 rounded-2xl bg-[#c48722] text-[#0b1f3b] flex items-center justify-center shrink-0 shadow-lg">
-                <Landmark size={32} className="stroke-[2.5]" />
+                <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 w-auto object-contain" />
               </div>
               <div>
                 <h3 className="text-2xl sm:text-3xl font-display font-black text-white mb-2">

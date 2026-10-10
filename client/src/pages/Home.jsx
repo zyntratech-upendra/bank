@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import { motion } from 'framer-motion';
+import { TypeAnimation } from 'react-type-animation';
 import {
   ShieldCheck,
   Percent,
@@ -81,93 +83,170 @@ const Home = () => {
       {/* ================================================================= */}
       {/* 1. HERO SECTION: 5-STAR LUXURY 3D COMPOSITION                     */}
       {/* ================================================================= */}
-      <section className="relative min-h-[620px] lg:min-h-[680px] flex items-center overflow-hidden bg-[#faf7f2] border-b border-slate-200/80">
+      <section className="relative min-h-[620px] lg:min-h-[680px] flex items-center overflow-hidden bg-gradient-to-br from-[#faf7f2] via-[#f5f1eb] to-[#faf7f2] border-b border-slate-200/80">
         
-        {/* Pristine 3D Government Bank & 24K Bullion Background (Zero street, zero people) */}
-        <div className="absolute right-0 top-0 bottom-0 w-full lg:w-[65%] xl:w-[62%] z-0 overflow-hidden pointer-events-none">
-          <img
-            src="/images/luxury_bank_gold_hero.jpg"
-            alt="3D Government Bank Headquarters and 24K Gold Ornaments"
-            className="w-full h-full object-cover object-[center_right] lg:object-left"
+        {/* Animated Background Elements (Glassmorphism blobs) */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <motion.div 
+            animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-20 -right-20 w-96 h-96 bg-[#c48722]/10 rounded-full blur-3xl"
           />
-          
-          {/* Subtle multi-stop gradient seamlessly merging into the warm cream page background */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#faf7f2] via-[#faf7f2]/90 lg:via-[#faf7f2]/20 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#faf7f2] via-transparent to-transparent lg:hidden" />
-          <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-b from-[#faf7f2] to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-[#faf7f2] to-transparent" />
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], rotate: [0, -90, 0] }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="absolute bottom-10 -left-20 w-[30rem] h-[30rem] bg-blue-500/5 rounded-full blur-3xl"
+          />
         </div>
 
-        {/* Left Column: Heading, Badges & Calls to Action */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 py-16 lg:py-24">
-          <div className="max-w-2xl text-left space-y-6">
+        {/* Main Content Container */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10 py-12 lg:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            {/* Trust Pill */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fcedd7] border border-[#f5d7ad] text-[#935b0b] text-[13px] font-bold tracking-wide shadow-2xs">
-              <ShieldCheck size={16} className="text-[#c48722]" />
-              <span>Trusted • Safe • Government Bank Tie-ups</span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-[60px] xl:text-[66px] font-display font-extrabold text-[#0e274a] leading-[1.12] tracking-tight">
-              Gold Loans <span className="text-[#c48722] font-serif italic font-normal">&amp;</span><br />
-              Financial Solutions
-            </h1>
-
-            {/* Sub-headline */}
-            <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal max-w-xl">
-              Get low interest gold loans through nearby Government Banks and easy financial solutions for your personal and business needs.
-            </p>
-
-            {/* Four Feature Badges (2x2 on Mobile, 4-Cols on Desktop) */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 pt-2 pb-1">
+            {/* Left Column: Heading, Badges & Calls to Action */}
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="lg:col-span-7 text-left space-y-6"
+            >
               
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
-                <div className="w-6 h-6 rounded-full bg-[#dbe8fa] text-[#0f2441] flex items-center justify-center shrink-0">
-                  <Percent size={13} className="stroke-[2.5]" />
-                </div>
-                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Low Interest</span>
-              </div>
-
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
-                <div className="w-6 h-6 rounded-full bg-[#dbe8fa] text-[#0f2441] flex items-center justify-center shrink-0">
-                  <Landmark size={13} className="stroke-[2.5]" />
-                </div>
-                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Govt. Banks</span>
-              </div>
-
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
-                <div className="w-6 h-6 rounded-full bg-[#faebd7] text-[#c48722] flex items-center justify-center shrink-0">
-                  <Zap size={13} className="stroke-[2.5]" />
-                </div>
-                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Quick Approval</span>
-              </div>
-
-              <div className="flex items-center gap-2 bg-white/95 backdrop-blur-xs border border-slate-200/90 rounded-xl px-3 py-2.5 shadow-2xs">
-                <div className="w-6 h-6 rounded-full bg-[#d5f3e2] text-emerald-800 flex items-center justify-center shrink-0">
-                  <ShieldCheck size={13} className="stroke-[2.5]" />
-                </div>
-                <span className="text-[12px] sm:text-[12.5px] font-bold text-slate-800 truncate">Safe &amp; Secure</span>
-              </div>
-
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-3">
-              <Link
-                to="/services"
-                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#c48722] hover:bg-[#b07619] text-white font-bold text-[15px] tracking-wide shadow-md hover:shadow-lg transition-all transform active:scale-95 text-center"
+              {/* Trust Pill */}
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 backdrop-blur-md border border-[#f5d7ad] text-[#935b0b] text-[13px] font-bold tracking-wide shadow-sm"
               >
-                Apply for Gold Loan
-                <ArrowRight size={18} />
-              </Link>
-              <Link
-                to="/services"
-                className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white border-2 border-slate-200 hover:border-slate-300 text-slate-700 font-bold text-[15px] hover:bg-slate-50 transition-all shadow-xs text-center"
-              >
-                Explore Services
-              </Link>
-            </div>
+                <ShieldCheck size={16} className="text-[#c48722]" />
+                <span>Trusted • Safe • Government Bank Tie-ups</span>
+              </motion.div>
+
+              {/* Main Headline */}
+              <h1 className="text-4xl sm:text-5xl lg:text-[54px] xl:text-[60px] font-display font-extrabold text-[#0e274a] leading-[1.15] tracking-tight">
+                Premium <span className="text-[#c48722] font-serif italic font-normal">Banking</span><br />
+                <span className="text-[#c48722] inline-block min-h-[1.25em]">
+                  <TypeAnimation
+                    sequence={[
+                      'Gold Loans',
+                      2200,
+                      'Loan Transfers',
+                      2200,
+                      'Business Loans',
+                      2200,
+                      'Financial Services',
+                      2200
+                    ]}
+                    wrapper="span"
+                    speed={50}
+                    className="text-[#c48722]"
+                    repeat={Infinity}
+                  />
+                </span>
+              </h1>
+
+              {/* Sub-headline */}
+              <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-medium max-w-xl">
+                Experience world-class banking services with the lowest interest rates. Secure your future with our reliable and government-partnered financial solutions.
+              </p>
+
+              {/* Four Feature Badges */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 pb-2">
+                {[
+                  { icon: Percent, label: 'Low Interest', bg: 'bg-[#eff6ff]', color: 'text-blue-700' },
+                  { icon: Landmark, label: 'Govt. Banks', bg: 'bg-[#eff6ff]', color: 'text-blue-700' },
+                  { icon: Zap, label: 'Quick Approval', bg: 'bg-[#fef5e7]', color: 'text-[#c48722]' },
+                  { icon: ShieldCheck, label: 'Safe & Secure', bg: 'bg-[#ecfdf5]', color: 'text-emerald-700' }
+                ].map((feature, i) => (
+                  <motion.div 
+                    key={i}
+                    whileHover={{ y: -4, scale: 1.02 }}
+                    className="flex items-center gap-2.5 bg-white/90 backdrop-blur-lg border border-slate-200/80 rounded-xl px-3.5 py-3 shadow-sm hover:shadow-md transition-all cursor-default"
+                  >
+                    <div className={`w-8 h-8 rounded-full ${feature.bg} ${feature.color} flex items-center justify-center shrink-0`}>
+                      <feature.icon size={16} className="stroke-[2.5]" />
+                    </div>
+                    <span className="text-[13px] font-bold text-slate-800 truncate">{feature.label}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                <Link to="/services">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-[#c48722] to-[#a97014] text-white font-bold text-[15px] tracking-wide shadow-lg shadow-amber-900/20 hover:shadow-xl hover:from-[#d1912a] hover:to-[#b87c17] transition-all"
+                  >
+                    Apply Now
+                    <ArrowRight size={18} />
+                  </motion.button>
+                </Link>
+                <Link to="/services">
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl bg-white/80 backdrop-blur-md border border-slate-300 hover:border-[#c48722] hover:bg-white text-slate-700 font-bold text-[15px] transition-all shadow-sm"
+                  >
+                    Explore Services
+                  </motion.button>
+                </Link>
+              </div>
+
+            </motion.div>
+
+            {/* Right Column: 3D Illustration Showcase with floating badges */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.92, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.2 }}
+              className="lg:col-span-5 relative flex items-center justify-center"
+            >
+              <div className="relative w-full max-w-[480px]">
+                {/* Glow effect behind illustration */}
+                <div className="absolute -inset-4 bg-gradient-to-tr from-amber-300/30 via-sky-300/20 to-blue-400/20 rounded-full blur-3xl opacity-70 animate-pulse pointer-events-none" />
+
+                {/* 3D Illustration Container with Glass Card */}
+                <div className="relative z-10 bg-gradient-to-b from-white/90 to-white/40 p-3 sm:p-4 rounded-3xl backdrop-blur-xl border border-white/80 shadow-[0_20px_50px_rgba(14,39,74,0.12)]">
+                  <motion.img
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    src="/images/banking_3d_hero.jpg"
+                    alt="Smart Digital Banking & Finance"
+                    className="w-full h-auto object-cover rounded-2xl shadow-inner select-none"
+                  />
+
+                  {/* Floating Micro Card: Lowest Interest */}
+                  <motion.div
+                    animate={{ y: [0, 8, 0] }}
+                    transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                    className="absolute -top-4 -left-4 sm:-left-6 bg-white/95 backdrop-blur-xl p-3 sm:p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] border border-amber-100 flex items-center gap-3 z-20"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200/80 flex items-center justify-center text-[#c48722]">
+                      <Percent size={20} className="stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Starting From</p>
+                      <p className="text-sm font-extrabold text-[#0e274a]">8.5% p.a. Interest</p>
+                    </div>
+                  </motion.div>
+
+                  {/* Floating Micro Card: 100% Insured */}
+                  <motion.div
+                    animate={{ y: [0, -8, 0] }}
+                    transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    className="absolute -bottom-4 -right-4 sm:-right-6 bg-white/95 backdrop-blur-xl p-3 sm:p-3.5 rounded-2xl shadow-[0_10px_25px_rgba(0,0,0,0.1)] border border-emerald-100 flex items-center gap-3 z-20"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600">
+                      <ShieldCheck size={20} className="stroke-[2.5]" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Security</p>
+                      <p className="text-sm font-extrabold text-[#0e274a]">100% Insured Vaults</p>
+                    </div>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
 
           </div>
         </div>
@@ -437,7 +516,7 @@ const Home = () => {
 
               <div className="flex items-center gap-3 sm:gap-4 p-2">
                 <div className="text-[#c48722] shrink-0">
-                  <Landmark size={32} className="sm:w-9 sm:h-9" />
+                  <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 sm:h-9 w-auto object-contain" />
                 </div>
                 <div>
                   <h4 className="text-xl sm:text-2xl lg:text-3xl font-black text-[#0e274a]">10+</h4>
@@ -831,7 +910,7 @@ const Home = () => {
             {/* Left side: Icon + Title + Description */}
             <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-5 z-10">
               <div className="w-16 h-16 rounded-2xl bg-[#c48722] text-[#0b1f3b] flex items-center justify-center shrink-0 shadow-lg">
-                <Landmark size={32} className="stroke-[2.5]" />
+                <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 w-auto object-contain" />
               </div>
               <div>
                 <h3 className="text-2xl sm:text-3xl font-display font-black text-white mb-2">

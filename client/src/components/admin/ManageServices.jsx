@@ -200,77 +200,127 @@ const ManageServices = ({ showToast }) => {
       </div>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
-          <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/80 w-full max-w-md p-7 animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          {/* Backdrop with dark blur */}
+          <div 
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-md transition-opacity" 
+            onClick={() => setIsModalOpen(false)} 
+          />
+          
+          {/* Pop-up Card */}
+          <div className="relative bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-lg overflow-hidden z-10 animate-in zoom-in-95 duration-200">
+            {/* Top decorative gradient bar */}
+            <div className="h-2 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500" />
             
-            {/* Modal Header */}
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-              <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
-                  {editingService ? <Edit2 size={18} /> : <Plus size={18} />}
+            {/* Header */}
+            <div className="px-6 sm:px-8 pt-6 pb-4 flex items-center justify-between border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-sm">
+                  {editingService ? <Edit2 size={20} className="stroke-[2.5]" /> : <Plus size={22} className="stroke-[2.5]" />}
                 </div>
-                {editingService ? 'Edit Service' : 'Add New Service'}
-              </h2>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 font-display tracking-tight">
+                    {editingService ? 'Edit Service' : 'Add New Service'}
+                  </h2>
+                  <p className="text-xs text-slate-500 font-medium">
+                    {editingService ? 'Update details for this banking service' : 'Configure a new dynamic service for customers'}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsModalOpen(false)} 
+                className="w-9 h-9 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                aria-label="Close modal"
+              >
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-5">
+            {/* Form Body */}
+            <form onSubmit={handleSave} className="p-6 sm:p-8 space-y-5">
+              {/* Service Title */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">Service Title <span className="text-rose-500">*</span></label>
-                <input 
-                  required 
-                  value={formData.title} 
-                  onChange={e => setFormData({...formData, title: e.target.value})} 
-                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl text-sm font-semibold transition-all outline-none" 
-                  placeholder="e.g. Gold Loan"
-                />
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Service Title <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <Layers size={17} />
+                  </div>
+                  <input 
+                    type="text"
+                    required 
+                    value={formData.title} 
+                    onChange={e => setFormData({...formData, title: e.target.value})} 
+                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl text-sm font-semibold text-slate-900 placeholder:text-slate-400 placeholder:font-normal transition-all outline-none" 
+                    placeholder="e.g. Gold Loan, Home Loan, Vehicle Loan"
+                  />
+                </div>
               </div>
               
+              {/* Description */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">Description <span className="text-rose-500">*</span></label>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Description <span className="text-rose-500">*</span>
+                </label>
                 <textarea 
                   required 
                   value={formData.description} 
                   onChange={e => setFormData({...formData, description: e.target.value})} 
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl text-sm transition-all outline-none h-28 resize-none" 
-                  placeholder="Describe the service benefits and features..."
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 transition-all outline-none h-28 resize-none leading-relaxed" 
+                  placeholder="Describe key features, eligibility, interest rates, and customer benefits..."
                 />
               </div>
               
+              {/* Status Radio / Select */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 ml-1">Status</label>
-                <div className="relative">
-                  <select 
-                    value={formData.status} 
-                    onChange={e => setFormData({...formData, status: e.target.value})} 
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 rounded-xl text-sm font-bold text-slate-700 transition-all outline-none appearance-none cursor-pointer"
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Service Status
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, status: 'Active'})}
+                    className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      formData.status === 'Active'
+                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
                   >
-                    <option value="Active">Active</option>
-                    <option value="Inactive">Inactive</option>
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                  </div>
+                    <span className={`w-2 h-2 rounded-full ${formData.status === 'Active' ? 'bg-emerald-500 ring-4 ring-emerald-200' : 'bg-slate-400'}`} />
+                    Active
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setFormData({...formData, status: 'Inactive'})}
+                    className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                      formData.status === 'Inactive'
+                        ? 'bg-amber-50 border-amber-500 text-amber-700 shadow-xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span className={`w-2 h-2 rounded-full ${formData.status === 'Inactive' ? 'bg-amber-500 ring-4 ring-amber-200' : 'bg-slate-400'}`} />
+                    Inactive
+                  </button>
                 </div>
               </div>
               
-              <div className="flex justify-end gap-3 pt-3">
+              {/* Footer Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
                 <button 
                   type="button" 
                   onClick={() => setIsModalOpen(false)} 
-                  className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl text-slate-600 font-bold text-sm transition-colors cursor-pointer"
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold text-xs sm:text-sm transition-all cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-md shadow-blue-500/20 transition-all hover:scale-105 cursor-pointer flex items-center gap-2"
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md shadow-blue-500/25 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex items-center gap-2"
                 >
-                  <CheckCircle2 size={16} />
-                  Save Changes
+                  <CheckCircle2 size={17} className="stroke-[2.5]" />
+                  <span>{editingService ? 'Update Service' : 'Save Service'}</span>
                 </button>
               </div>
             </form>

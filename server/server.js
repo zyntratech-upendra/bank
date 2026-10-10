@@ -21,8 +21,11 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Database connection
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bank-loans';
 
+mongoose.set('bufferCommands', false);
+
 mongoose.connect(MONGO_URI, {
-  serverSelectionTimeoutMS: 3000
+  serverSelectionTimeoutMS: 5000
+
 }).then(async () => {
   console.log('✅ MongoDB Connected successfully.');
   await Store.seedInitialData();

@@ -57,7 +57,11 @@ const BranchOperationsView = (props) => {
                       <div className="p-4 bg-emerald-50 rounded-xl">
                         <p className="text-xs font-semibold text-emerald-600 mb-1">Total Disbursed</p>
                         <p className="text-2xl font-black text-slate-900">
-                          ₹{selectedBranch === 'All' ? '12.5L' : '4.2L'}
+                          ₹{(() => {
+                            const branchApps = selectedBranch === 'All' ? applications : applications.filter(a => a.branch === selectedBranch);
+                            const disbursed = branchApps.filter(a => a.status === 'Disbursed').reduce((sum, a) => sum + (Number(a.amount) || 0), 0);
+                            return disbursed.toLocaleString('en-IN');
+                          })()}
                         </p>
                       </div>
                       <div className="p-4 bg-amber-50 rounded-xl">

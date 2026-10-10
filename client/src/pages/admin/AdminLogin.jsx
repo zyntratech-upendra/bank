@@ -77,18 +77,11 @@ const AdminLogin = () => {
       >
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-3 bg-white border border-slate-200 px-4 py-2.5 rounded-2xl shadow-sm mb-5">
-            <div className="bg-gradient-to-tr from-blue-700 to-blue-500 p-2.5 rounded-xl text-white shadow-sm">
-              <Landmark size={24} className="stroke-[2.5]" />
-            </div>
-            <div className="text-left">
-              <span className="text-lg font-black tracking-tight text-slate-900 block leading-tight">
-                BANKING SERVICES
-              </span>
-              <span className="text-[10px] font-bold tracking-[0.2em] text-blue-600 block leading-none">
-                TRUSTED FINANCIAL PARTNER
-              </span>
-            </div>
+          <div className="inline-flex flex-col items-center bg-white border border-slate-200 p-6 rounded-3xl shadow-sm mb-5 w-full max-w-[320px]">
+            <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-20 sm:h-24 w-[90%] object-contain mb-4" />
+            <span className="text-[10px] font-bold tracking-[0.2em] text-blue-600 block leading-none text-center">
+              TRUSTED FINANCIAL PARTNER
+            </span>
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[11px] font-semibold uppercase tracking-wider mb-2">
@@ -131,7 +124,7 @@ const AdminLogin = () => {
                 <CheckCircle2 size={36} />
               </div>
               <h3 className="text-xl font-bold text-slate-900">Authorization Confirmed</h3>
-              <p className="text-xs text-slate-500">Opening Banking Services Admin Dashboard...</p>
+              <p className="text-xs text-slate-500">Opening Shayaan Swarna Mitra Admin Dashboard...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

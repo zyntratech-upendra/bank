@@ -1,12 +1,112 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Landmark, CreditCard, Clock, CheckCircle2, AlertCircle, 
   FileText, ShieldCheck, Upload, Banknote, IndianRupee, ArrowRight,
-  MapPin, Loader2, Navigation
+  MapPin, Loader2, Navigation, Coins, Sparkles, TrendingUp, ChevronDown,
+  Building2, Briefcase, Home, RefreshCw, Zap
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
+
+const formatBankName = (name = '') => {
+  if (!name) return 'Partner Bank';
+  return name
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const getBankMeta = (bankName = '') => {
+  const name = (bankName || '').toLowerCase();
+  if (name.includes('union')) {
+    return {
+      initials: 'UBI',
+      gradient: 'from-blue-600 via-indigo-600 to-red-600',
+    };
+  }
+  if (name.includes('canara')) {
+    return {
+      initials: 'CB',
+      gradient: 'from-sky-500 via-blue-600 to-amber-500',
+    };
+  }
+  if (name.includes('indian')) {
+    return {
+      initials: 'IB',
+      gradient: 'from-blue-700 via-indigo-800 to-sky-700',
+    };
+  }
+  if (name.includes('sbi') || name.includes('state bank')) {
+    return {
+      initials: 'SBI',
+      gradient: 'from-sky-600 via-blue-700 to-cyan-700',
+    };
+  }
+  if (name.includes('hdfc')) {
+    return {
+      initials: 'HDFC',
+      gradient: 'from-blue-800 via-indigo-800 to-rose-600',
+    };
+  }
+  if (name.includes('icici')) {
+    return {
+      initials: 'ICICI',
+      gradient: 'from-amber-600 via-orange-600 to-rose-700',
+    };
+  }
+  if (name.includes('baroda') || name.includes('bob')) {
+    return {
+      initials: 'BOB',
+      gradient: 'from-orange-500 via-amber-600 to-rose-600',
+    };
+  }
+  if (name.includes('pnb') || name.includes('punjab')) {
+    return {
+      initials: 'PNB',
+      gradient: 'from-rose-700 via-red-800 to-amber-700',
+    };
+  }
+  
+  const initials = bankName
+    ? bankName.split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase()
+    : 'BNK';
+  return {
+    initials: initials || 'BNK',
+    gradient: 'from-slate-700 via-slate-800 to-slate-900',
+  };
+};
+
+const getServiceMeta = (serviceTitle = '') => {
+  const title = (serviceTitle || '').toLowerCase();
+  if (title.includes('business')) {
+    return {
+      icon: Briefcase,
+      color: 'text-blue-600 bg-blue-50 border-blue-200',
+      badge: 'Low Rate'
+    };
+  }
+  if (title.includes('home')) {
+    return {
+      icon: Home,
+      color: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+      badge: 'Long Tenure'
+    };
+  }
+  if (title.includes('renew') || title.includes('transfer')) {
+    return {
+      icon: RefreshCw,
+      color: 'text-amber-600 bg-amber-50 border-amber-200',
+      badge: 'Quick Switch'
+    };
+  }
+  return {
+    icon: ShieldCheck,
+    color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+    badge: 'Fast Disbursal'
+  };
+};
 
 import ApplyLoanTab from '../components/user/ApplyLoanTab';
 import MyLoansTab from '../components/user/MyLoansTab';
@@ -21,14 +121,37 @@ const UserDashboard = () => {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const currentTab = query.get('tab') || 'dashboard';
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('bank_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
   const [applications, setApplications] = useState([]);
   const [bankRates, setBankRates] = useState([]);
   const [dynamicServices, setDynamicServices] = useState([]);
   const [locationsList, setLocationsList] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!localStorage.getItem('bank_user'));
   const [selectedCity, setSelectedCity] = useState('');
   const [isDetecting, setIsDetecting] = useState(false);
+
+  const filteredBankRates = useMemo(() => {
+    if (!bankRates || bankRates.length === 0) return [];
+    if (!selectedCity) return bankRates;
+    return bankRates.filter(r => (r.cityName || '').toLowerCase() === selectedCity.toLowerCase());
+  }, [bankRates, selectedCity]);
+
+  const maxGoldRate = useMemo(() => {
+    if (!filteredBankRates.length) return 0;
+    return Math.max(...filteredBankRates.map(r => Number(r.goldRatePerGram) || 0));
+  }, [filteredBankRates]);
+
+  const minInterestRate = useMemo(() => {
+    if (!filteredBankRates.length) return 999;
+    return Math.min(...filteredBankRates.map(r => Number(r.interestRate) || 999));
+  }, [filteredBankRates]);
 
   const handleDetectLocation = () => {
     setIsDetecting(true);
@@ -54,35 +177,49 @@ const UserDashboard = () => {
   };
 
   useEffect(() => {
-    // Normally you'd get this from a proper AuthContext, using localStorage for simplicity here
-    const token = localStorage.getItem('bank_token');
+    const token = localStorage.getItem('bank_token') || localStorage.getItem('bank_admin_token');
     if (!token) {
       navigate('/login');
       return;
     }
 
+    // Safety timeout: Never keep the user waiting on a spinner longer than 1 second
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1200);
+
     const fetchDashboardData = async () => {
       try {
-        // Fetch current user
-        const userRes = await api.get('/auth/me');
-        if (userRes.data?.user) {
-          setUser(userRes.data.user);
-          setSelectedCity(userRes.data.user.branch || 'Vijayawada');
-          localStorage.setItem('bank_user', JSON.stringify(userRes.data.user));
+        // Fetch current user with fast timeout
+        try {
+          const userRes = await api.get('/auth/me');
+          if (userRes.data?.user) {
+            setUser(userRes.data.user);
+            setSelectedCity(userRes.data.user.branch || 'Vijayawada');
+            localStorage.setItem('bank_user', JSON.stringify(userRes.data.user));
+          }
+        } catch (uErr) {
+          console.warn('User info fallback to cached profile:', uErr.message);
+          const cachedUser = localStorage.getItem('bank_user');
+          if (cachedUser) {
+            try {
+              setUser(JSON.parse(cachedUser));
+            } catch (e) {}
+          }
         }
         
         // Fetch applications and service requests
         try {
           const [appRes, srRes] = await Promise.all([
-            api.get('/auth/me/applications'),
-            api.get('/auth/me/service-requests')
+            api.get('/auth/me/applications').catch(() => ({ data: [] })),
+            api.get('/auth/me/service-requests').catch(() => ({ data: [] }))
           ]);
           
           let combined = [];
-          if (appRes.data) {
+          if (appRes.data && Array.isArray(appRes.data)) {
             combined = [...appRes.data];
           }
-          if (srRes.data) {
+          if (srRes.data && Array.isArray(srRes.data)) {
             const formattedSRs = srRes.data.map(sr => {
               // Try to extract an amount from formData
               let extractedAmount = null;
@@ -97,7 +234,6 @@ const UserDashboard = () => {
                     }
                   }
                 }
-                // Fallback check
                 if (!extractedAmount) {
                   for (const [key, value] of Object.entries(sr.formData)) {
                     if ((key.toLowerCase().includes('amount') || key.toLowerCase().includes('value')) && value) {
@@ -113,6 +249,7 @@ const UserDashboard = () => {
 
               return {
                 _id: sr._id,
+                applicationId: sr.requestId || `SR${sr._id.slice(-6).toUpperCase()}`,
                 loanType: sr.serviceName,
                 amount: extractedAmount,
                 status: sr.status,
@@ -124,18 +261,15 @@ const UserDashboard = () => {
           }
           
           // Sort by newest first
-          combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          combined.sort((a, b) => new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now()));
           setApplications(combined);
         } catch (err) {
-          // Mock data if unauthorized or fail
-          setApplications([
-            { _id: '1', loanType: 'Gold Loan', amount: 300000, status: 'Approved', createdAt: new Date(Date.now() - 1000000000).toISOString() }
-          ]);
+          console.warn('Applications fetch failed, using fallback:', err.message);
         }
       } catch (error) {
         console.error('Failed to load dashboard:', error);
-        navigate('/login');
       } finally {
+        clearTimeout(safetyTimer);
         setLoading(false);
       }
     };
@@ -196,7 +330,7 @@ const UserDashboard = () => {
             <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
             <div className="flex items-center gap-4 relative z-10">
               <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                <Landmark size={24} className="stroke-[2]" />
+                <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 w-auto object-contain" />
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Active Loans</p>
@@ -287,78 +421,238 @@ const UserDashboard = () => {
                   transition={{ delay: 0.25 }}
                   className="grid grid-cols-1 md:grid-cols-2 gap-6"
                 >
-                  {/* Gold Rates Card */}
-                  <div className="bg-[#112340] rounded-3xl p-6 shadow-sm text-white">
-                    <div className="flex flex-wrap items-center justify-between mb-5 gap-4">
-                      <h2 className="text-[11px] sm:text-xs font-bold uppercase tracking-widest text-white/90 flex items-center gap-2">
-                        <Banknote size={16} className="text-[#f59e0b]" /> TODAY'S GOLD RATES
-                      </h2>
-                      
-                      <div className="relative">
-                        <select 
-                          value={selectedCity}
-                          onChange={(e) => setSelectedCity(e.target.value)}
-                          className="appearance-none bg-transparent text-xs font-bold text-white/80 outline-none pr-5 cursor-pointer hover:text-white transition-colors"
-                        >
-                          <option value="" className="text-black">All Branches</option>
-                          {locationsList.map((loc, i) => (
-                            <option key={i} value={loc.name} className="text-black">{loc.name}</option>
-                          ))}
-                          {/* Fallback options if DB empty */}
-                          {locationsList.length === 0 && (
-                            <>
-                              <option value="Vijayawada" className="text-black">Vijayawada</option>
-                              <option value="Hyderabad" className="text-black">Hyderabad</option>
-                              <option value="Chennai" className="text-black">Chennai</option>
-                            </>
-                          )}
-                        </select>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-white/70">
-                          <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Today's Gold Rates Card */}
+                  <div className="bg-white/80 backdrop-blur-xl border border-amber-200/70 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between group/card">
+                    {/* Ambient Warm Golden Glow */}
+                    <div className="absolute -top-16 -right-16 w-44 h-44 bg-gradient-to-br from-amber-300/30 via-yellow-200/15 to-transparent rounded-full blur-2xl pointer-events-none" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500" />
 
-                    {bankRates && bankRates.filter(r => !selectedCity || r.cityName.toLowerCase() === selectedCity.toLowerCase()).length > 0 ? (
-                      <div className="space-y-3">
-                        {bankRates.filter(r => !selectedCity || r.cityName.toLowerCase() === selectedCity.toLowerCase()).slice(0, 3).map((rate, idx) => (
-                          <div key={idx} className="flex justify-between items-center p-4 rounded-xl bg-[#203657] border border-[#2d466b]/30">
-                            <span className="text-sm font-bold text-white lowercase">{rate.bankName || 'sbi'}</span>
-                            <div className="text-right">
-                              <span className="text-[#f59e0b] font-bold text-base block leading-tight">{rate.interestRate}% <span className="text-[10px] text-white/70 font-normal">p.a</span></span>
-                              <span className="text-xs text-white/70">₹{rate.goldRatePerGram}/g</span>
+                    <div>
+                      {/* Card Header */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 text-white flex items-center justify-center shadow-md shadow-amber-500/20 ring-4 ring-amber-50 shrink-0">
+                            <Coins size={20} className="stroke-[2.2]" />
+                          </div>
+                          <div>
+                            <h2 className="text-xs font-black uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                              Today's Gold Rates
+                            </h2>
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-700 mt-0.5">
+                              <span className="relative flex h-1.5 w-1.5">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                              </span>
+                              Live Market LTV • 22K & 24K
                             </div>
                           </div>
-                        ))}
+                        </div>
+
+                        {/* City / Branch Selector */}
+                        <div className="relative inline-flex items-center bg-white/90 border border-slate-200/90 hover:border-amber-400 focus-within:border-amber-500 rounded-xl px-2.5 py-1.5 shadow-xs text-xs font-bold text-slate-700 transition-all">
+                          <MapPin size={12} className="text-amber-600 mr-1.5 shrink-0" />
+                          <select 
+                            value={selectedCity}
+                            onChange={(e) => setSelectedCity(e.target.value)}
+                            className="appearance-none bg-transparent text-xs font-bold text-slate-700 outline-none pr-4 cursor-pointer hover:text-slate-900 transition-colors"
+                          >
+                            <option value="">All Branches</option>
+                            {locationsList.map((loc, i) => {
+                              const cName = loc.city || loc.cityName || loc.name || 'Branch';
+                              return <option key={i} value={cName}>{cName}</option>;
+                            })}
+                            {locationsList.length === 0 && (
+                              <>
+                                <option value="Vijayawada">Vijayawada</option>
+                                <option value="Hyderabad">Hyderabad</option>
+                                <option value="Chennai">Chennai</option>
+                              </>
+                            )}
+                          </select>
+                          <ChevronDown size={12} className="text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+                        </div>
                       </div>
-                    ) : (
-                      <div className="p-8 bg-[#203657] rounded-xl text-center border border-[#2d466b]/30">
-                        <p className="text-sm text-white/70">No rates available for {selectedCity || 'this location'}.</p>
-                      </div>
-                    )}
+
+                      {/* Rates List */}
+                      {filteredBankRates && filteredBankRates.length > 0 ? (
+                        <div className="space-y-3">
+                          {filteredBankRates.slice(0, 3).map((rate, idx) => {
+                            const bankMeta = getBankMeta(rate.bankName);
+                            const isHighestRate = maxGoldRate > 0 && Number(rate.goldRatePerGram) === maxGoldRate;
+                            const isLowestInterest = minInterestRate < 999 && Number(rate.interestRate) === minInterestRate;
+
+                            return (
+                              <div 
+                                key={idx} 
+                                onClick={() => navigate('/dashboard?tab=apply')}
+                                className="group/item cursor-pointer p-3.5 rounded-2xl bg-white border border-slate-150/80 hover:border-amber-400 hover:shadow-md transition-all duration-200 flex items-center justify-between gap-3 relative overflow-hidden"
+                              >
+                                {/* Left Accent Strip on Hover */}
+                                <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-400 opacity-0 group-hover/item:opacity-100 transition-opacity" />
+
+                                {/* Bank Brand & Info */}
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${bankMeta.gradient} text-white font-black text-xs flex items-center justify-center shadow-sm shrink-0 tracking-tight`}>
+                                    {bankMeta.initials}
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-sm font-bold text-slate-900 group-hover/item:text-amber-800 transition-colors truncate">
+                                        {formatBankName(rate.bankName || 'Partner Bank')}
+                                      </span>
+                                      {isHighestRate && (
+                                        <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-md border border-amber-200">
+                                          ★ Best LTV
+                                        </span>
+                                      )}
+                                      {isLowestInterest && !isHighestRate && (
+                                        <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded-md border border-emerald-200">
+                                          ⚡ Low ROI
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
+                                      <MapPin size={10} className="text-slate-400 shrink-0" />
+                                      <span className="truncate">{rate.branchName || rate.cityName || 'City Branch'}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Rates Columns */}
+                                <div className="flex items-center gap-3 shrink-0">
+                                  <div className="text-right">
+                                    <div className="text-sm sm:text-base font-black text-slate-900 tracking-tight leading-none">
+                                      ₹{Number(rate.goldRatePerGram).toLocaleString('en-IN')}
+                                      <span className="text-[10px] font-medium text-slate-400 ml-0.5">/g</span>
+                                    </div>
+                                    <div className="mt-1 flex items-center justify-end">
+                                      <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded-md leading-tight">
+                                        {rate.interestRate}% <span className="font-normal text-slate-500">p.a</span>
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover/item:bg-amber-500 text-slate-500 group-hover/item:text-white flex items-center justify-center transition-all shrink-0">
+                                    <ArrowRight size={13} />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="p-8 bg-slate-50/70 rounded-2xl text-center border border-dashed border-slate-200">
+                          <Coins size={28} className="text-slate-300 mx-auto mb-2" />
+                          <p className="text-xs font-semibold text-slate-600">No rates listed for {selectedCity || 'this branch'}</p>
+                          <button 
+                            onClick={() => setSelectedCity('')} 
+                            className="mt-2 text-[11px] font-bold text-amber-600 hover:text-amber-800 underline"
+                          >
+                            View all branches
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Bottom CTA Strip */}
+                    <div className="mt-4 pt-3.5 border-t border-slate-100/90 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-400 flex items-center gap-1 font-medium">
+                        <Sparkles size={12} className="text-amber-500" /> Instant pledge valuation
+                      </span>
+                      <button 
+                        onClick={() => navigate('/dashboard?tab=apply')}
+                        className="font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 hover:underline"
+                      >
+                        Apply Gold Loan <ArrowRight size={11} />
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Dynamic Services Card */}
-                  <div className="bg-white/60 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm">
-                    <h2 className="text-sm font-black uppercase tracking-widest text-[#0e274a] mb-4 flex items-center gap-2">
-                      <ShieldCheck size={18} className="text-emerald-500" /> Featured Services
-                    </h2>
-                    {dynamicServices && dynamicServices.length > 0 ? (
-                      <div className="space-y-3">
-                        {dynamicServices.slice(0, 3).map((service, idx) => (
-                          <div key={idx} className="flex flex-col p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-200 transition-colors">
-                            <span className="text-sm font-bold text-slate-800">{service.title}</span>
-                            <span className="text-xs text-slate-500 mt-1 line-clamp-1">{service.description}</span>
+                  {/* Featured Services Card */}
+                  <div className="bg-white/80 backdrop-blur-xl border border-white/80 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden flex flex-col justify-between group/card">
+                    {/* Ambient Blue Glow & Top Line */}
+                    <div className="absolute -top-16 -right-16 w-44 h-44 bg-gradient-to-br from-blue-300/20 via-indigo-200/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+                    <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-400 to-sky-400" />
+
+                    <div>
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 text-white flex items-center justify-center shadow-md shadow-blue-500/20 ring-4 ring-blue-50 shrink-0">
+                            <ShieldCheck size={20} className="stroke-[2.2]" />
                           </div>
-                        ))}
+                          <div>
+                            <h2 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                              Featured Services
+                            </h2>
+                            <p className="text-[10px] font-bold text-slate-400 mt-0.5">
+                              Tailored lending & credit solutions
+                            </p>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => navigate('/services')}
+                          className="text-[11px] font-bold text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                        >
+                          View All <ArrowRight size={11} />
+                        </button>
                       </div>
-                    ) : (
-                      <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
-                        <p className="text-sm text-slate-500">More services coming soon.</p>
-                      </div>
-                    )}
+
+                      {dynamicServices && dynamicServices.length > 0 ? (
+                        <div className="space-y-3">
+                          {dynamicServices.slice(0, 3).map((service, idx) => {
+                            const meta = getServiceMeta(service.title);
+                            const ServiceIcon = meta.icon;
+                            return (
+                              <div 
+                                key={idx} 
+                                onClick={() => navigate('/services')}
+                                className="group/srv cursor-pointer p-3.5 rounded-2xl bg-white border border-slate-150/80 hover:border-blue-400 hover:shadow-md transition-all duration-200 flex items-center justify-between gap-3 relative overflow-hidden"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shrink-0 transition-colors ${meta.color} group-hover/srv:bg-blue-600 group-hover/srv:text-white group-hover/srv:border-blue-600`}>
+                                    <ServiceIcon size={18} />
+                                  </div>
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-sm font-bold text-slate-800 group-hover/srv:text-blue-700 transition-colors truncate capitalize">
+                                        {service.title}
+                                      </span>
+                                      <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200/60 hidden sm:inline-block">
+                                        {meta.badge}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-1">
+                                      {service.description || 'Explore competitive interest rates and rapid approvals.'}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover/srv:bg-blue-600 text-slate-500 group-hover/srv:text-white flex items-center justify-center transition-all shrink-0">
+                                  <ArrowRight size={13} />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="p-8 bg-slate-50/70 rounded-2xl text-center border border-dashed border-slate-200">
+                          <ShieldCheck size={28} className="text-slate-300 mx-auto mb-2" />
+                          <p className="text-xs font-semibold text-slate-500">More services coming soon.</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-4 pt-3.5 border-t border-slate-100/90 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-400 flex items-center gap-1 font-medium">
+                        <CheckCircle2 size={12} className="text-emerald-500" /> Fast approvals with zero paperwork hassle
+                      </span>
+                      <button 
+                        onClick={() => navigate('/services')}
+                        className="font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
+                      >
+                        Explore All <ArrowRight size={11} />
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
 
@@ -422,8 +716,24 @@ const UserDashboard = () => {
               </>
             )}
 
-            {currentTab === 'apply' && <ApplyLoanTab />}
-            {currentTab === 'loans' && <MyLoansTab applications={applications} />}
+            {currentTab === 'apply' && (
+              <ApplyLoanTab 
+                user={user}
+                bankRates={bankRates}
+                dynamicServices={dynamicServices}
+                locationsList={locationsList}
+                onApplicationSubmitted={(newApp) => {
+                  setApplications(prev => [newApp, ...prev]);
+                }}
+              />
+            )}
+            {currentTab === 'loans' && (
+              <MyLoansTab 
+                applications={applications} 
+                user={user} 
+                onNavigate={(tab) => navigate('/dashboard?tab=' + tab)} 
+              />
+            )}
             {currentTab === 'payments' && <PaymentsTab applications={applications} />}
             {currentTab === 'documents' && <DocumentsTab user={user} />}
             {currentTab === 'support' && <SupportTab />}

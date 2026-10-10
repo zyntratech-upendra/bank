@@ -28,15 +28,9 @@ const ApplicationsView = (props) => {
                   <p className="text-xs text-slate-500">Manage customer loan requests and verification workflows</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <button 
-                    onClick={() => {
-                      const sample = applications[0];
-                      if (sample) setSelectedApplication(sample);
-                    }}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm cursor-pointer"
-                  >
-                    Quick Inspect Sample (#APP2026001)
-                  </button>
+                  <span className="text-xs font-semibold px-3 py-1.5 bg-blue-50 text-blue-700 rounded-xl border border-blue-200">
+                    Total in Database: {applications.length}
+                  </span>
                 </div>
               </div>
 
@@ -76,6 +70,13 @@ const ApplicationsView = (props) => {
                           </td>
                         </tr>
                       ))}
+                      {filteredApplications.length === 0 && (
+                        <tr>
+                          <td colSpan="8" className="py-12 text-center text-slate-400 text-xs">
+                            No loan applications found in database.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>

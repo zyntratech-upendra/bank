@@ -43,14 +43,14 @@ const Loader = ({ onFinish }) => {
             className="absolute -inset-2.5 rounded-3xl bg-gradient-to-tr from-[#c48722]/40 to-amber-200/50 blur-lg"
           />
 
-          {/* Main Icon Container - Deep Navy with Gold Border */}
+          {/* Main Icon Container - Without the blue box because logo is white */}
           <motion.div
             initial={{ scale: 0.75, opacity: 0, y: 10 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-24 h-24 sm:w-28 sm:h-28 bg-[#0e274a] border-2 border-[#c48722] rounded-3xl flex items-center justify-center shadow-[0_12px_30px_rgba(14,39,74,0.18)]"
+            className="relative flex items-center justify-center"
           >
-            <Landmark className="w-12 h-12 sm:w-14 sm:h-14 text-[#f5c76c] stroke-[2.2] drop-shadow-sm" />
+            <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-20 sm:h-24 w-auto object-contain drop-shadow-lg" />
           </motion.div>
         </div>
 
@@ -59,14 +59,8 @@ const Loader = ({ onFinish }) => {
           initial={{ y: 15, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="space-y-1.5"
+          className="space-y-1.5 pt-4"
         >
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-[#0e274a] font-display">
-            BANKING
-          </h1>
-          <p className="text-xs sm:text-sm font-extrabold tracking-[0.35em] text-[#c48722] uppercase">
-            SERVICES
-          </p>
 
           <div className="pt-3">
             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#fcedd7] border border-[#f5d7ad] text-[#935b0b] text-xs font-bold tracking-wide shadow-2xs">

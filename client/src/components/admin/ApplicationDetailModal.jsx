@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   X, 
   CheckCircle2, 
@@ -26,6 +26,24 @@ const ApplicationDetailModal = ({ application, onClose, onUpdate }) => {
   const [actionLoading, setActionLoading] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [appData, setAppData] = useState(application);
+  const [customer, setCustomer] = useState(null);
+  
+  const [sanctionForm, setSanctionForm] = useState({
+    amount: application?.amount || 0,
+    interestRate: application?.interestRate || 8.5,
+    tenure: application?.loanTenure || 12,
+    firstEmiDate: '',
+    repaymentMode: 'Auto-Debit',
+  });
+
+  useEffect(() => {
+    if (appData?.applicantEmail) {
+      api.get('/admin/customers').then(res => {
+        const match = res.data.find(c => (c.email || '').toLowerCase() === appData.applicantEmail.toLowerCase());
+        if (match) setCustomer(match);
+      }).catch(err => console.error("Error fetching customer", err));
+    }
+  }, [appData?.applicantEmail]);
 
   if (!appData) return null;
 
@@ -72,14 +90,43 @@ const ApplicationDetailModal = ({ application, onClose, onUpdate }) => {
     }
   };
 
+  const docsCount = appData.documents?.length || (customer?.aadhaarDocUrl ? 3 : 4);
   const subTabs = [
-    `Documents (${appData.documents?.length || 4})`,
+    `Documents (${docsCount})`,
     'KYC Details',
     'Gold Details',
     'Bank Details',
     'Comments',
-    'History'
+    'History',
+    'Sanction'
   ];
+
+  const handleDisburse = async () => {
+    try {
+      setActionLoading(true);
+      const emi = (() => {
+        const P = Number(sanctionForm.amount);
+        const R = Number(sanctionForm.interestRate) / 12 / 100;
+        const N = Number(sanctionForm.tenure);
+        if (!P || !R || !N) return 0;
+        return Math.round((P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1));
+      })();
+
+      const res = await api.post(`/admin/applications/${appData.applicationId}/disburse`, {
+        ...sanctionForm,
+        monthlyEmi: emi
+      });
+      setAppData(res.data.application);
+      onUpdate && onUpdate(res.data.application);
+      setActiveSubTab('History');
+      alert(`Loan Sanctioned and Disbursed successfully! EMI: ₹${emi.toLocaleString('en-IN')}`);
+    } catch (err) {
+      console.error(err);
+      alert('Error during disbursement.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -142,12 +189,12 @@ const ApplicationDetailModal = ({ application, onClose, onUpdate }) => {
 
             {/* Approve Button */}
             <button
-              onClick={() => handleStatusChange('Approved')}
-              disabled={actionLoading || appData.status === 'Approved'}
+              onClick={() => setActiveSubTab('Sanction')}
+              disabled={appData.status === 'Disbursed'}
               className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
             >
               <CheckCircle2 size={15} />
-              <span>Approve</span>
+              <span>Sanction</span>
             </button>
 
             {/* Reject Button */}
@@ -336,12 +383,26 @@ const ApplicationDetailModal = ({ application, onClose, onUpdate }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {(appData.documents || [
-                        { id: '1', type: 'Aadhaar Card', fileName: 'suresh_aadhaar.pdf', status: 'Verified', remarks: '-', uploadedOn: '24 Sep 2026' },
-                        { id: '2', type: 'PAN Card', fileName: 'suresh_pan.pdf', status: 'Verified', remarks: '-', uploadedOn: '24 Sep 2026' },
-                        { id: '3', type: 'Address Proof', fileName: 'address_proof.pdf', status: 'Pending', remarks: 'Need clear copy', uploadedOn: '24 Sep 2026' },
-                        { id: '4', type: 'Gold Invoice / Ornament Photo', fileName: 'gold_photo.jpg', status: 'Pending', remarks: 'Need better image', uploadedOn: '24 Sep 2026' }
-                      ]).map((doc) => (
+                      {(() => {
+                        let docs = appData.documents || [];
+                        if (docs.length === 0) {
+                          if (customer?.aadhaarDocUrl) {
+                            docs = [
+                              { id: 'aadhaar', type: 'Aadhaar Card', fileName: 'aadhaar.jpg', status: 'Uploaded', url: customer.aadhaarDocUrl },
+                              { id: 'pan', type: 'PAN Card', fileName: 'pan.jpg', status: 'Uploaded', url: customer.panDocUrl },
+                              { id: 'profile', type: 'Profile Pic', fileName: 'profile.jpg', status: 'Uploaded', url: customer.profilePicUrl }
+                            ].filter(d => d.url);
+                          } else {
+                            docs = [
+                              { id: '1', type: 'Aadhaar Card', fileName: 'suresh_aadhaar.pdf', status: 'Verified', remarks: '-', uploadedOn: '24 Sep 2026' },
+                              { id: '2', type: 'PAN Card', fileName: 'suresh_pan.pdf', status: 'Verified', remarks: '-', uploadedOn: '24 Sep 2026' },
+                              { id: '3', type: 'Address Proof', fileName: 'address_proof.pdf', status: 'Pending', remarks: 'Need clear copy', uploadedOn: '24 Sep 2026' },
+                              { id: '4', type: 'Gold Invoice / Ornament Photo', fileName: 'gold_photo.jpg', status: 'Pending', remarks: 'Need better image', uploadedOn: '24 Sep 2026' }
+                            ];
+                          }
+                        }
+                        return docs;
+                      })().map((doc) => (
                         <tr key={doc.id || doc.type} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3 font-semibold text-slate-800">{doc.type}</td>
                           <td className="py-3">
@@ -367,7 +428,10 @@ const ApplicationDetailModal = ({ application, onClose, onUpdate }) => {
                                 Verify
                               </button>
                             )}
-                            <button className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer">
+                            <button 
+                              onClick={() => doc.url ? window.open(doc.url, '_blank') : null}
+                              className="px-2.5 py-1 text-[11px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer"
+                            >
                               View
                             </button>
                           </td>
@@ -494,6 +558,91 @@ const ApplicationDetailModal = ({ application, onClose, onUpdate }) => {
                       <span className="text-[11px] text-slate-400">{h.date}</span>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {/* 7. Sanction & Disburse Tab */}
+              {activeSubTab === 'Sanction' && (
+                <div className="space-y-6 text-xs max-w-2xl">
+                  <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-800 text-sm mb-1">Sanction Terms & Disbursement</h4>
+                    <p className="text-blue-600">Review and finalize the loan terms before disbursing funds to the customer's account.</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Approved Amount (₹)</label>
+                      <input 
+                        type="number" 
+                        value={sanctionForm.amount}
+                        onChange={e => setSanctionForm({...sanctionForm, amount: e.target.value})}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-bold text-slate-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Interest Rate (% p.a.)</label>
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        value={sanctionForm.interestRate}
+                        onChange={e => setSanctionForm({...sanctionForm, interestRate: e.target.value})}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-bold text-slate-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">Tenure (Months)</label>
+                      <input 
+                        type="number" 
+                        value={sanctionForm.tenure}
+                        onChange={e => setSanctionForm({...sanctionForm, tenure: e.target.value})}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-bold text-slate-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-slate-500 font-bold mb-1.5 uppercase tracking-wider text-[10px]">First EMI Date</label>
+                      <input 
+                        type="date" 
+                        value={sanctionForm.firstEmiDate}
+                        onChange={e => setSanctionForm({...sanctionForm, firstEmiDate: e.target.value})}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all font-bold text-slate-800"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="block text-emerald-800 font-bold mb-0.5">Calculated Monthly EMI</span>
+                      <span className="text-[10px] text-emerald-600">Based on flat rate reducing balance</span>
+                    </div>
+                    <span className="text-2xl font-black text-emerald-700">₹{
+                      (() => {
+                         const P = Number(sanctionForm.amount);
+                         const R = Number(sanctionForm.interestRate) / 12 / 100;
+                         const N = Number(sanctionForm.tenure);
+                         if (!P || !R || !N) return 0;
+                         const emi = (P * R * Math.pow(1 + R, N)) / (Math.pow(1 + R, N) - 1);
+                         return Math.round(emi).toLocaleString('en-IN');
+                      })()
+                    }</span>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                    <button 
+                      onClick={() => handleStatusChange('Approved')}
+                      disabled={actionLoading || appData.status === 'Approved' || appData.status === 'Disbursed'}
+                      className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-xl transition-colors disabled:opacity-50"
+                    >
+                      Only Approve
+                    </button>
+                    <button 
+                      onClick={handleDisburse}
+                      disabled={actionLoading || appData.status === 'Disbursed' || !sanctionForm.firstEmiDate}
+                      className="px-5 py-2 bg-emerald-600 text-white font-bold rounded-xl shadow-md hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      <Send size={14} />
+                      Approve & Disburse
+                    </button>
+                  </div>
                 </div>
               )}
 

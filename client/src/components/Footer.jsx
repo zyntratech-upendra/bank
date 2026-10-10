@@ -7,14 +7,8 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12">
           <div className="col-span-1">
-            <Link to="/" className="flex items-center space-x-2 mb-6">
-              <div className="bg-white p-2 rounded-lg text-brand-blue-900">
-                <Landmark size={28} />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white leading-tight">BANKING</h1>
-                <p className="text-[10px] text-brand-gold-400 font-semibold tracking-widest uppercase">Services</p>
-              </div>
+            <Link to="/" className="inline-block bg-white p-3 rounded-xl mb-6 shadow-sm">
+              <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-10 w-auto object-contain" />
             </Link>
             <p className="text-sm text-slate-400 mb-6 leading-relaxed">
               Your trusted financial partner for gold loans, loan transfers, and one-lending solutions with nearby Government Banks.
@@ -81,7 +75,7 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-brand-blue-800 pt-6 mt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-slate-400 gap-4 text-center sm:text-left">
-          <p>&copy; {new Date().getFullYear()} BANKING SERVICES. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} SHAYAAN SWARNA MITRA. All rights reserved.</p>
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to="/about" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link to="/about" className="hover:text-white transition-colors">Terms of Service</Link>

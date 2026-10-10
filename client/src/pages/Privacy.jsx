@@ -11,7 +11,7 @@ const Privacy = () => {
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link to="/" className="inline-flex items-center space-x-3 group">
             <div className="bg-[#0e274a] text-white p-2.5 rounded-xl shadow-md transition-transform group-hover:scale-105">
-              <Landmark size={24} className="stroke-[2.2]" />
+              <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-8 w-auto object-contain" />
             </div>
             <div>
               <span className="text-xl font-black tracking-tight block leading-none text-[#0e274a]">BANKING</span>
@@ -41,7 +41,7 @@ const Privacy = () => {
             
             <section>
               <p className="text-lg">
-                At Banking Services, we take your privacy and the security of your financial data extremely seriously. This Privacy Policy outlines how we collect, use, and protect your information.
+                At Shayaan Swarna Mitra, we take your privacy and the security of your financial data extremely seriously. This Privacy Policy outlines how we collect, use, and protect your information.
               </p>
             </section>
 

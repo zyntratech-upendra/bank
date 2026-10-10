@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const CustomersView = (props) => {
   const {
+    loading = false,
     adminUser, stats, selectedBranch, setSelectedBranch,
     applications, filteredApplications, getStatusBadge,
     setActiveTab, setSelectedApplication, showToast,

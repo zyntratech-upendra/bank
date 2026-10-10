@@ -20,7 +20,6 @@ const loanSchema = new mongoose.Schema({
   address: { type: String, default: '12-3-45, MG Road, Vijayawada, AP' },
   loanType: { 
     type: String, 
-    enum: ['Gold Loan', 'Loan Transfer', 'One Lending', 'Personal Loan', 'Business Loan'], 
     required: true 
   },
   amount: { type: Number, required: true },

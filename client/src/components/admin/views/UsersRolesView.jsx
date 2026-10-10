@@ -62,15 +62,9 @@ const UsersRolesView = (props) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {(usersList.length > 0 ? usersList : [
-                        { id: 'USR001', name: 'Ravi Kumar', title: 'Branch Manager', branch: 'Vijayawada', status: 'Active' },
-                        { id: 'USR002', name: 'Sita Reddy', title: 'Branch Staff', branch: 'Vijayawada', status: 'Active' },
-                        { id: 'USR003', name: 'Anil Mehta', title: 'KYC Officer', branch: 'Vijayawada', status: 'Active' },
-                        { id: 'USR004', name: 'Priya Sharma', title: 'Operations Executive', branch: 'Vijayawada', status: 'Active' },
-                        { id: 'USR005', name: 'Karthik', title: 'Collections Executive', branch: 'Vijayawada', status: 'Inactive' }
-                      ]).map((u) => (
+                      {usersList.map((u) => (
                         <tr key={u.id || u._id} className="hover:bg-slate-50 transition-colors">
-                          <td className="py-3.5 px-6 font-bold text-blue-600">{u.id || 'USR' + u._id?.slice(-3)}</td>
+                          <td className="py-3.5 px-6 font-bold text-blue-600">{u.id || 'USR' + (u._id || '').toString().slice(-4)}</td>
                           <td className="py-3.5 px-4 font-semibold text-slate-800">{u.name}</td>
                           <td className="py-3.5 px-4 text-slate-600">{u.title || u.role}</td>
                           <td className="py-3.5 px-4 text-slate-500">{u.branch || 'Vijayawada'}</td>
@@ -94,6 +88,13 @@ const UsersRolesView = (props) => {
                           </td>
                         </tr>
                       ))}
+                      {usersList.length === 0 && (
+                        <tr>
+                          <td colSpan="6" className="py-12 text-center text-slate-400 text-xs">
+                            No staff users found in database. Click &quot;+ Add User&quot; to create one.
+                          </td>
+                        </tr>
+                      )}
                     </tbody>
                   </table>
                 </div>

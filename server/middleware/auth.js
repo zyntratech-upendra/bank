@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
@@ -13,10 +14,12 @@ const verifyToken = async (req, res, next) => {
     
     // Check if user still exists if DB connected, or decode payload
     let user = null;
-    try {
-      user = await User.findById(decoded.id).select('-password');
-    } catch (e) {
-      // In-memory or fallback
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+      try {
+        user = await User.findById(decoded.id).select('-password');
+      } catch (e) {
+        // In-memory or fallback
+      }
     }
 
     req.user = user || {

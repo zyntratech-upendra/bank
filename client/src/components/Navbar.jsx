@@ -110,19 +110,10 @@ const Navbar = () => {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.05)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative" ref={searchRef}>
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-20 sm:h-24">
           
-          {/* Logo - Matches Mockup: Blue temple icon without box + text */}
-          <Link to="/" className="flex items-center space-x-2 sm:space-x-2.5 group shrink-0">
-            <Landmark size={30} className="stroke-[2.2] text-[#0e274a] group-hover:scale-105 transition-transform shrink-0" />
-            <div className="flex flex-col">
-              <span className="text-lg sm:text-xl font-black tracking-tight text-[#0e274a] leading-none">
-                BANKING
-              </span>
-              <span className="text-[10px] sm:text-[11px] font-extrabold tracking-[0.22em] text-[#0e274a] leading-none mt-1">
-                SERVICES
-              </span>
-            </div>
+          <Link to="/" className="flex items-center group shrink-0 py-2">
+            <img src="/logo.png" alt="Shayaan Swarna Mitra Logo" className="h-20 sm:h-24 md:h-28 w-auto object-contain transition-transform shrink-0 origin-left" />
           </Link>
 
           {/* Desktop Navigation Links */}
